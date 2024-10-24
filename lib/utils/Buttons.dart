@@ -1,4 +1,4 @@
-import 'package:vista_practica/pages/pagina_plantaelec.dart';
+import 'package:vista_practica/pages/PE/Inicio_PE.dart';
 import 'package:vista_practica/utils/Button_info.dart';
 
 List<ButtonInfo> getButtons() {
