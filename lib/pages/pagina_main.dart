@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vista_practica/routes/routes.dart';
 //import 'package:flutter_form_builder/flutter_form_builder.dart';
 //import 'package:google_fonts/google_fonts.dart';
 //import 'package:sizer/sizer.dart';
@@ -15,8 +17,9 @@ import 'CMPA/Inicio_CMPA.dart';
 import 'package:vista_practica/widgets/button_custom.dart';
 
 class Pagemain extends StatefulWidget {
+  final dynamic userData;
   static const String routeName = 'Pagina Principal';
-  const Pagemain({super.key});
+  const Pagemain({super.key, this.userData});
 
   @override
   State<Pagemain> createState() => _PagemainState();
@@ -28,6 +31,20 @@ class _PagemainState extends State<Pagemain> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: ()async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.popAndPushNamed(context, Routes.login);
+            },
+          )
+        ],
+        
+      ),
+
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         body: SafeArea(
           child: Stack(

@@ -10,8 +10,15 @@ class EstadosCMPA extends StatefulWidget {
 class _EstadosCMPAState extends State<EstadosCMPA> {
   final _formKey = GlobalKey<FormState>();
 
-  
-
-
-  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Estados CMPA'),
+      ),
+      body: Center(
+        child: Text('Content goes here'),
+      ),
+    );
+  }
 }

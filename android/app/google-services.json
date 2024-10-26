@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "310405135122",
+    "project_id": "distri-servicios",
+    "storage_bucket": "distri-servicios.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:310405135122:android:d19107cac6b2a523c311cb",
+        "android_client_info": {
+          "package_name": "com.distri.servicios"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "310405135122-1bekmd86tv7j6pjn2vc1o537ab0i541e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIVxXmFR-5cvwvcCtcqjIwK6h_jAZTxmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "310405135122-1bekmd86tv7j6pjn2vc1o537ab0i541e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "310405135122-b5vclns2gtcpl18q503ros7uebt3ur4d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.distri.servicios"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
