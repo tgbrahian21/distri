@@ -1,102 +1,57 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/auth_provider.dart';
 
-enum AuthStatus {notAuthentication, chaeking, authenticated}
+enum AuthStatus { notAuthenticated, checking, authenticated }
 
-class LoginProvider  extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class LoginProvider extends ChangeNotifier {
+  AuthStatus authStatus = AuthStatus.notAuthenticated;
 
-  AuthStatus authStatus = AuthStatus.notAuthentication;
+  Future<void> loginUser({
+    required BuildContext context,
+    required String usernameOrEmail,
+    required String password,
+    required Function onSuccess,
+    required Function(String) onError,
+  }) async {
+    final authProvider = Provider.of<AuthProviderP>(context, listen: false);
 
-  Future<void> LoginUser({
-  required String usernameOrEmail,
-  required String password,
-  required Function onSuccess,
-  required Function(String) onError,
-}) async {
-  try {
-    authStatus = AuthStatus.chaeking;
-    notifyListeners();
+    try {
+      authStatus = AuthStatus.checking;
+      notifyListeners();
 
-    // Ingresar con nombre de usuario
-    final String usernameOrEmailLowerCase = usernameOrEmail.toLowerCase();
-    final QuerySnapshot result = await _firestore
-        .collection('users')
-        .where('username_lowercase', isEqualTo: usernameOrEmailLowerCase)
-        .limit(1)
-        .get();
+      // Iniciar sesión delegando a AuthProvider
+      bool success = await authProvider.login(usernameOrEmail, password);
 
-    if (result.docs.isNotEmpty) {
-      final String email = result.docs.first.get('email');
-      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      onSuccess();
-      return;
-    }
-
-    // Ingresar con correo electrónico
-    final QuerySnapshot resultEmail = await _firestore
-        .collection('users')
-        .where('email', isEqualTo: usernameOrEmailLowerCase)
-        .limit(1)
-        .get();
-
-    if (resultEmail.docs.isNotEmpty) {
-      final String email = resultEmail.docs.first.get('email');
-      final UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      onSuccess();
-      return;
-    }
-
-    // Si no se encuentra usuario ni por nombre ni por correo
-    onError('Usuario o contraseña incorrectos');
-  } on FirebaseAuthException catch (e) {
-    if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-      onError('Usuario o contraseña incorrectos');
-    } else {
-      onError(e.toString());
-    }
-  } catch (e) {
-    onError(e.toString());
-  }
-}
-
-
-  //verificar el estado del usuario
-  void checkAuthState() {
-    _auth.authStateChanges().listen((User? user) {
-      if (user == null) {
-        authStatus = AuthStatus.notAuthentication;
-      } else {
+      if (success) {
         authStatus = AuthStatus.authenticated;
+        onSuccess();
+      } else {
+        authStatus = AuthStatus.notAuthenticated;
+        onError('Usuario o contraseña incorrectos');
       }
+      notifyListeners();
+    } catch (error) {
+      authStatus = AuthStatus.notAuthenticated;
+      onError(error.toString());
+      notifyListeners();
+    }
+  }
+
+  // Verificar el estado del usuario (delegado a AuthProvider)
+  void checkAuthState(BuildContext context) {
+    final authProvider = Provider.of<AuthProviderP>(context, listen: false);
+    authProvider.authStateChanges.listen((isAuthenticated) {
+      authStatus = isAuthenticated ? AuthStatus.authenticated : AuthStatus.notAuthenticated;
       notifyListeners();
     });
   }
 
-  //obtener datos del usuario
-  Future<dynamic> getUserData(String email) async {
-    final QuerySnapshot<Map<String, dynamic>> result = await _firestore
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .limit(1)
-        .get();
-
-    if (result.docs.isNotEmpty) {
-      final userData = result.docs[0].data();
-      return userData;
-    }
-    return null;
+  // Obtener datos del usuario (delegado a AuthProvider)
+  Future<dynamic> getUserData(BuildContext context, String email) async {
+    final authProvider = Provider.of<AuthProviderP>(context, listen: false);
+    return await authProvider.getUserData(email);
   }
- 
-
-
 }

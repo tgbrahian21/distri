@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vista_practica/firebase_options.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
+import 'package:vista_practica/provider/auth_provider.dart';
 import 'package:vista_practica/provider/login_provider.dart';
 import 'package:vista_practica/provider/register_provider.dart';
 import 'package:vista_practica/routes/app_routes.dart';
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         return MultiProvider(
           providers: [
             ChangeNotifierProvider(lazy: false,create: (_) => LoginProvider()),
+            ChangeNotifierProvider(lazy: false,create: (_) => AuthProviderP()),
             ChangeNotifierProvider(lazy: false,create: (_) => RegisterProvider()),
           ],
           child: MaterialApp(
