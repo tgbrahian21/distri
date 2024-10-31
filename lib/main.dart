@@ -9,6 +9,7 @@ import 'package:vista_practica/firebase_options.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/provider/auth_provider.dart';
 import 'package:vista_practica/provider/login_provider.dart';
+import 'package:vista_practica/provider/plantaelec_provider.dart';
 import 'package:vista_practica/provider/register_provider.dart';
 import 'package:vista_practica/routes/app_routes.dart';
 import 'package:vista_practica/routes/routes.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(lazy: false,create: (_) => LoginProvider()),
             ChangeNotifierProvider(lazy: false,create: (_) => AuthProviderP()),
             ChangeNotifierProvider(lazy: false,create: (_) => RegisterProvider()),
+            ChangeNotifierProvider(lazy: false,create: (_) => PlantaelecProvider()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -52,7 +54,7 @@ class MyApp extends StatelessWidget {
                Locale('es','ES'), // Hebrew
             ],
             debugShowCheckedModeBanner: false,
-            initialRoute: Routes.splash,
+            initialRoute: Routes.firsh,
             routes: appRoutes,
             // Add other properties as needed
           ),

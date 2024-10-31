@@ -3,6 +3,7 @@ class Routes {
 
   static const String splash = '/Splash';
   static const String inicio = '/Inicio';
+  static const String firsh = '/Firsh';
 
   static const String register = '/Register';
   static const String login = '/Login';

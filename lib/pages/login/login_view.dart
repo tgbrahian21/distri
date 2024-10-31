@@ -50,6 +50,7 @@ class _LoginViewState extends State<LoginView> {
   context,
 ) async {
   final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+  FocusScope.of(context).unfocus();
   if (_formKey.currentState!.validate()) {
     setState(() {
       _isLoading = true;
