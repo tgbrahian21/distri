@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vista_practica/pages/PL/Fails_PL.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 
 import 'Datos_PL.dart';
@@ -164,7 +165,7 @@ class _PaginaPulidoraState extends State<PaginaPulidora> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const Pagemain(),
+                              builder: (context) => const FailPL(),
                             ));
                         // Handle EN CASO DE FALLA DEL EQUIPO tap
                       },

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/plantaelec_provider.dart';
 
 class LiquidosPE extends StatefulWidget {
   const LiquidosPE({Key? key}) : super(key: key);
@@ -8,11 +10,35 @@ class LiquidosPE extends StatefulWidget {
 }
 
 class _LiquidosPEState extends State<LiquidosPE> {
+  String? _selectedPlantaId;
+
+  @override
+  void initState() {
+    super.initState();
+    final plantaelecProvider =
+        Provider.of<PlantaelecProvider>(context, listen: false);
+    plantaelecProvider.handleFirestoreOperation(
+        action: "fetch"); // Carga los datos al iniciar el widget
+  }
+
   final _formKey = GlobalKey<FormState>();
+  final _combustible = TextEditingController();
+  final _aceite = TextEditingController();
 
   void _saveData() {
     // Aquí puedes agregar la lógica para guardar los datos
-    print('Datos guardados');
+    final data = Plantaelec(
+      combustible: _combustible.text,
+      aceite:_aceite.text,
+    );
+
+    Provider.of<PlantaelecProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedPlantaId!);
+    // Muestra un mensaje emergente
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos enviados correctamente')),
+    );
   }
 
   @override
@@ -34,8 +60,7 @@ class _LiquidosPEState extends State<LiquidosPE> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/Logo_distriservicios.png'),
+                image: AssetImage('assets/images/Logo_distriservicios.png'),
                 fit: BoxFit.scaleDown,
                 opacity: 0.1,
               ),
@@ -48,6 +73,29 @@ class _LiquidosPEState extends State<LiquidosPE> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Dropdown para seleccionar la planta eléctrica
+                  Consumer<PlantaelecProvider>(
+                    builder: (context, provider, child) {
+                      return Center(
+                        child: DropdownButton<String>(
+                          value: _selectedPlantaId,
+                          hint: Text('Selecciona una planta eléctrica'),
+                          items: provider.plantaelecList.map((planta) {
+                            return DropdownMenuItem<String>(
+                              value: planta.id,
+                              child: Text(planta.fecha.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedPlantaId = newValue;
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ), // Fin del Dropdown de plantas eléctricas
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -111,6 +159,7 @@ class _LiquidosPEState extends State<LiquidosPE> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _combustible,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Nivel de combustible',
@@ -135,6 +184,7 @@ class _LiquidosPEState extends State<LiquidosPE> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _aceite,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Cambios de aceite',
@@ -153,6 +203,8 @@ class _LiquidosPEState extends State<LiquidosPE> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _saveData();
+                        _aceite.clear();
+                        _combustible.clear();
                         showDialog(
                           context: context,
                           builder: (context) {

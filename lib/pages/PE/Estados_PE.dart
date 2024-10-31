@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/plantaelec_provider.dart';
 
 class EstadosPE extends StatefulWidget {
   const EstadosPE({super.key});
@@ -8,6 +10,14 @@ class EstadosPE extends StatefulWidget {
 }
 
 class _EstadosPEState extends State<EstadosPE> {
+  String? _selectedPlantaId;
+
+  @override
+  void initState() {
+    super.initState();
+    final plantaelecProvider = Provider.of<PlantaelecProvider>(context, listen: false);
+    plantaelecProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
   final _formKey = GlobalKey<FormState>();
   String? _selectedEncendido;
   String? _selectedYoyoArranque;
@@ -35,30 +45,28 @@ class _EstadosPEState extends State<EstadosPE> {
   // Nueva función para enviar los datos seleccionados
   void _saveData() {
     // Recolectar los valores seleccionados
-    String message = '''
-      Encendido: $_selectedEncendido
-      Yoyo de arranque: $_selectedYoyoArranque
-      Motor: $_selectedMotor
-      Soportes de motor: $_selectedSoportesMotor
-      Sistema eléctrico: $_selectedSistemaElectrico
-      Estado de batería: $_selectedEstadoBateria
-      Estado del generador: $_selectedEstadoGenerador
-      Soporte del generador: $_selectedSoporteGenerador
-      Tanque de combustible: $_selectedTanqueCombustible
-      Mangueras de combustible: $_selectedManguerasCombustible
-      Conexiones eléctricas: $_selectedConexionesElectricas
-      Estado de acoples: $_selectedEstadoAcoples
-      Estado del exhosto: $_selectedEstadoExhosto
-      Guardas: $_selectedGuardas
-      Nivel de aceite: $_selectedNivelAceites
-      Condiciones del equipo: $_selectedCondicionEquipo
-      Indicadores: $_selectedIndicadores
-      Llantas: $_selectedLlantas
-    ''';
+    final data = Plantaelec(
+      encendido: _selectedEncendido!,
+      yoyoarranque: _selectedYoyoArranque!,
+      motor: _selectedMotor!,
+      soportemotor: _selectedSoportesMotor!,
+      sistemaelectrico: _selectedSistemaElectrico!,
+      estadobateria: _selectedEstadoBateria!,
+      estadogenerador: _selectedEstadoGenerador!,
+      soportegenerador: _selectedSoporteGenerador!,
+      tanquecombustible: _selectedTanqueCombustible!,
+      manguerascombustible: _selectedManguerasCombustible!,
+      conexioneselectricas: _selectedConexionesElectricas!,
+      estadoacoples: _selectedEstadoAcoples!,
+      estadoexhosto: _selectedEstadoExhosto!,
+      nivelaceites: _selectedNivelAceites!,
+      condicionequipo: _selectedCondicionEquipo!,
+      indicadores: _selectedIndicadores!,
+      llantas: _selectedLlantas!,
+    );
 
-    // Aquí puedes procesar el mensaje o enviarlo a algún servicio o base de datos
-    print(message);
 
+    Provider.of<PlantaelecProvider>(context, listen: false).handleFirestoreOperation(action: "update",data: data, id: _selectedPlantaId!);
     // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Datos enviados correctamente')),
@@ -96,6 +104,28 @@ class _EstadosPEState extends State<EstadosPE> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Dropdown para seleccionar la planta eléctrica
+                Consumer<PlantaelecProvider>(
+        builder: (context, provider, child) {
+          return Center(
+            child: DropdownButton<String>(
+              value: _selectedPlantaId,
+              hint: Text('Selecciona una planta eléctrica'),
+              items: provider.plantaelecList.map((planta) {
+                return DropdownMenuItem<String>(
+                  value: planta.id,
+                  child: Text(planta.fecha.toString()),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedPlantaId = newValue;
+                });
+              },
+            ),
+          );
+        },
+      ),// Fin del Dropdown de plantas eléctricas
                 Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceBetween, // Alinea los elementos a los extremos

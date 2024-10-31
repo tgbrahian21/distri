@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vista_practica/pages/firsh_page.dart';
 import 'package:vista_practica/pages/login/login_view.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/pages/register/register_view.dart';
@@ -13,7 +14,7 @@ Map<String, Widget Function(BuildContext)> appRoutes = {
   Routes.login: (_) => const LoginView(),
   Routes.splash: (_) => const SplashPage(),
 
-  //Routes.firsh: (_) => const FirshPage(),
+  Routes.firsh: (_) => const FirshPage(),
 
   
 };

@@ -21,7 +21,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailOrEmailController = TextEditingController();
+  final TextEditingController _userOrEmailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isObscure = true;
@@ -38,95 +38,91 @@ class _LoginViewState extends State<LoginView> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _emailOrEmailController.dispose();
+    _userOrEmailController.dispose();
     _passwordController.dispose();
   }
 
 
   //loguear el usuario
   void onFormLogin(
-    String usernameOrEmail,
-    String password,
-    context,
-  ) async {
-    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  String usernameOrEmail,
+  String password,
+  context,
+) async {
+  final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+  FocusScope.of(context).unfocus();
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+    });
 
-      final String usernameOrEmailLower = usernameOrEmail.toLowerCase();
+    final String usernameOrEmailLower = usernameOrEmail.toLowerCase();
 
-      loginProvider.LoginUser(
-          usernameOrEmail: usernameOrEmailLower,
-          password: password,
-          onSuccess: () async {
+    loginProvider.loginUser(
+      context: context, // Asegúrate de pasar el contexto
+      usernameOrEmail: usernameOrEmailLower,
+      password: password,
+      onSuccess: () async {
+  // Verificar si el usuario ha verificado su cuenta
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null && user.emailVerified) {
+    // Si el usuario ha verificado su cuenta
+    setState(() {
+      _isLoading = false;
+    });
 
-          //verificar si el usuario a verificado su cuenta
-          User? user = FirebaseAuth.instance.currentUser;
-          if (user != null && user.emailVerified) {
-            //si el usuario ha verificado su cuenta
-            setState(() {
-              _isLoading = false;
-            });
+    // Llama a getUserData correctamente
+    dynamic userData = await loginProvider.getUserData(context, user.email!);
 
-          dynamic userData = await loginProvider.getUserData(user.email!);
+    // Guardar los datos del usuario en el local storage
+    await LocalStorage().saveUserData(_userOrEmailController.text, _passwordController.text);
+    // Guardar el estado de inicio de sesión
+    await LocalStorage().setIsSignedIn(true);
 
-          //guardar los datos del usuario en el local storage
-          await LocalStorage().saveUserData(_emailOrEmailController.text, _passwordController.text);
-          //guardar el estado de inicio de sesion
-          await LocalStorage().setIsSignedIn(true);
+    // Cambiar estado de autenticación
+    loginProvider.checkAuthState(context); // Pasar el contexto aquí también
 
-          //cambiar estado de autenticacion
-          loginProvider.checkAuthState();
+    // Navegar a la página principal
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+      return Pagemain(
+        userData: userData,
+      );
+    }));
+  } else {
+    setState(() {
+      // Si el usuario no ha verificado su cuenta
+      _isLoading = false;
+    });
 
-          //navegar a la pagina principal
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-            return Pagemain(
-              userData: userData,
-            );
-          }));
-
-          } else {
-            setState(() {
-              //si el usuario no ha verificado su cuenta
-              _isLoading = false;
-            });
-
-            await showDialog(context: context, builder: (context){
-              return AlertDialog(
-                title: const Text('Verifica tu cuenta'),
-                content: const Text('Por favor verifica tu cuenta, te hemos enviado un correo de verificacion'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Aceptar'),
-                  ),
-                ],
-              );
+    await showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: const Text('Verifica tu cuenta'),
+        content: const Text('Por favor verifica tu cuenta, te hemos enviado un correo de verificación'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
             },
-            );
-          }
-            
-
-          },
-          onError: (String error) {
-            setState(() {
-              _isLoading = false;
-            });
-            showSnackbar(context, error.toString());
-          }
-          );
-
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+            child: const Text('Aceptar'),
+          ),
+        ],
+      );
+    });
   }
-
+},
+      onError: (String error) {
+        setState(() {
+          _isLoading = false;
+        });
+        showSnackbar(context, error.toString());
+      },
+    );
+  } else {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,7 +159,7 @@ class _LoginViewState extends State<LoginView> {
                     ImputDecorationWidget(
                       hintText: 'user@example',
                       labelText: 'Ingrese email o usuario',
-                      controller: _emailOrEmailController,
+                      controller: _userOrEmailController,
                       keyboardType: TextInputType.emailAddress,
                       suffixIcon: Icon(Icons.email_outlined),
                       validator: Validators.emailOrUser,
@@ -191,7 +187,7 @@ class _LoginViewState extends State<LoginView> {
                     _isLoading ? CircularProgressWidget(text: 'Validando.....',)
                     : ButtonDecorationWidget(text: "Inicia Sesion",
                     onPressed: () {
-                      onFormLogin(_emailOrEmailController.text, _passwordController.text, context);
+                      onFormLogin(_userOrEmailController.text, _passwordController.text, context);
                     },
                     ),
                     const SizedBox(height: 20),
