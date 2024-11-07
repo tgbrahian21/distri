@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/compresor_provider.dart';
 
 class EstadosCMPE extends StatefulWidget {
   const EstadosCMPE({super.key});
@@ -8,11 +10,18 @@ class EstadosCMPE extends StatefulWidget {
 }
 
 class _EstadosCMPEState extends State<EstadosCMPE> {
+  String? _selectedCompresorId;
+
+  @override
+  void initState() {
+    super.initState();
+    final taladroProvider = Provider.of<CompresorProvider>(context, listen: false);
+    taladroProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
   final _formKey = GlobalKey<FormState>();
 
   String? _selectedInterPresionCMPE;
   String? _selectedManometroCMPE;
-
   String? _selectedHorometroCMPE;
   String? _selectedValvulaCMPE;
   String? _selectedSoportesCMPE;
@@ -21,18 +30,15 @@ class _EstadosCMPEState extends State<EstadosCMPE> {
   // Nueva función para enviar los datos seleccionados
   void _saveData() {
     // Recolectar los valores seleccionados
-    String message = '''
-      Interruptor de presion: $_selectedInterPresionCMPE
-      Estado del interruptor de encendido: $_selectedManometroCMPE
-      
-      Estado del Horómetro $_selectedHorometroCMPE
-      Valvula de sobrepresion: $_selectedValvulaCMPE
-      Soportes: $_selectedSoportesCMPE
+    final data = Compresor(
+      interpresioncmpe: _selectedInterPresionCMPE!,
+      manometrocmpe: _selectedManometroCMPE!,
+      horometrocmpe: _selectedHorometroCMPE!,
+      valvulacmpe: _selectedValvulaCMPE!,
+      soportescmpe: _selectedSoportesCMPE!,
+    );
 
-    ''';
-
-    // Aquí puedes procesar el mensaje o enviarlo a algún servicio o base de datos
-    print(message);
+    Provider.of<CompresorProvider>(context, listen: false).handleFirestoreOperation(action: "update",data: data, id: _selectedCompresorId!);
 
     // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,6 +77,30 @@ class _EstadosCMPEState extends State<EstadosCMPE> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Dropdown para seleccionar la planta eléctrica
+                Consumer<CompresorProvider>(
+        builder: (context, provider, child) {
+          return Center(
+            child: DropdownButton<String>(
+              value: _selectedCompresorId,
+              hint: Text('Selecciona una fecha'),
+              items: provider.compresorList.map((planta) {
+                return DropdownMenuItem<String>(
+                  value: planta.id,
+                  child: Text(planta.fecha.toString()),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedCompresorId = newValue;
+                });
+              },
+            ),
+          );
+        },
+      ),
+      // Fin del Dropdown de plantas eléctricas
+                const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceBetween, // Alinea los elementos a los extremos

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/plantaelec_provider.dart';
 
 class FailPE extends StatefulWidget {
   const FailPE({super.key});
@@ -8,15 +10,56 @@ class FailPE extends StatefulWidget {
 }
 
 class _FailPEState extends State<FailPE> {
+String? _selectedPlantaId;
+
+  @override
+  void initState() {
+    super.initState();
+    final plantaelecProvider =
+        Provider.of<PlantaelecProvider>(context, listen: false);
+    plantaelecProvider.handleFirestoreOperation(
+        action: "fetch"); // Carga los datos al iniciar el widget
+  }
+
   bool _showDetails = false; // Controla si se deben mostrar los detalles
   String _almacenadoPorOperador = ''; // Estado para la primera opción
   String _remitidoAMantenimiento = ''; // Estado para la segunda opción
+  final _fallasController = TextEditingController();
 // Variable para los datos del TextField
   final _formKey = GlobalKey<FormState>(); // Clave para el formulario
 
   void _saveData() {
     // Aquí puedes agregar la lógica para guardar los datos
-    print('Datos guardados');
+  if (!_showDetails) {
+    final data = Plantaelec(
+    almacenadoporoperador: "No aplica",
+    remitidoamantenimiento: "No aplica",
+    fallas: "No aplica",
+
+  );    
+
+    Provider.of<PlantaelecProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedPlantaId);
+   ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos enviados correctamente')),
+    );         
+
+  } else {
+    final data = Plantaelec(
+    almacenadoporoperador: _almacenadoPorOperador,
+    remitidoamantenimiento: _remitidoAMantenimiento,
+    fallas: _fallasController.text,
+
+  );    
+
+    Provider.of<PlantaelecProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedPlantaId);
+
+            
+
+  }
   }
 
   @override
@@ -35,6 +78,7 @@ class _FailPEState extends State<FailPE> {
       ),
       body: Stack( // Usamos un Stack para la imagen de fondo
         children: [
+           
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -53,6 +97,29 @@ class _FailPEState extends State<FailPE> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Dropdown para seleccionar la planta eléctrica
+                  Consumer<PlantaelecProvider>(
+                    builder: (context, provider, child) {
+                      return Center(
+                        child: DropdownButton<String>(
+                          value: _selectedPlantaId,
+                          hint: Text('Selecciona una fecha'),
+                          items: provider.plantaelecList.map((planta) {
+                            return DropdownMenuItem<String>(
+                              value: planta.id,
+                              child: Text(planta.fecha.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedPlantaId = newValue;
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ), // Fin del Dropdown de plantas eléctricas
+                  const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -105,6 +172,7 @@ class _FailPEState extends State<FailPE> {
                               setState(() {
                                 _showDetails = true; // Mostrar el resto del contenido
                               });
+                              
                             },
                             child: const Text('Sí'),
                           ),
@@ -112,11 +180,14 @@ class _FailPEState extends State<FailPE> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: ElevatedButton(
+                            
                             onPressed: () {
                               setState(() {
                                 _showDetails = false; // Ocultar el contenido
                               });
+                              _saveData();
                             },
+                            
                             child: const Text('No'),
                           ),
                         ),
@@ -147,6 +218,7 @@ class _FailPEState extends State<FailPE> {
                           return null;
                         },
                         onChanged: (value) {
+                          _fallasController.text = value;
                         },
                       ),
                       const SizedBox(height: 16),

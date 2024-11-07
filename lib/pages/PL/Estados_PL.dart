@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/pulidora_provider.dart';
 
 class EstadosPL extends StatefulWidget {
   const EstadosPL({super.key});
@@ -8,6 +10,15 @@ class EstadosPL extends StatefulWidget {
 }
 
 class _EstadosPLState extends State<EstadosPL> {
+  String? _selectedPulidoraId;
+
+  @override
+  void initState() {
+    super.initState();
+    final pulidoraProvider = Provider.of<PulidoraProvider>(context, listen: false);
+    pulidoraProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
+
   final _formKey = GlobalKey<FormState>();
 
   String? _selectedConexionesPL;
@@ -29,26 +40,21 @@ class _EstadosPLState extends State<EstadosPL> {
   // Nueva función para enviar los datos seleccionados
   void _saveData() {
     // Recolectar los valores seleccionados
-    String message = '''
-      Se verificó el estado de conexiones eléctricas: $_selectedConexionesPL
-      Estado del interruptor de encendido: $_selectedInstDisco
-      Cuenta con acoples adecuados para los accesorios: $_selectedAcoplesPL
-      
-      Estado del cuerpo $_selectedInstMangoPL
-      Estado de la guarda: $_selectedInterruptorIncenPL
-      Estado del interruptor de accion de martillo: $_selectedGuiaGuardaPL
-      Estado del mango: $_selectedAccesoriosPL
+    final data = Pulidora(
+      conexionesPL: _selectedConexionesPL!,
+      instDisco: _selectedInstDisco!,
+      acoplesPL: _selectedAcoplesPL!,
+      instmangoPL: _selectedInstMangoPL!,
+      interruptorincenPL: _selectedInterruptorIncenPL!,
+      guiaguardaPL: _selectedGuiaGuardaPL!,
+      accesoriosPL: _selectedAccesoriosPL!,
+      generalPL: _selectedGeneralPL!,
+      eppPL: _selectedEppPL!,
+      barrerasPL: _selectedBarrerasPL!,
+      discoPL: _selectedDiscoPL!,
+    );
 
-      Estado general de la pulidora: $_selectedGeneralPL
-      Se utilizan adecuadamente los epp para la labor: $_selectedEppPL
-      Se han instalado barreras y/o aislamientos apropiados: $_selectedBarrerasPL
-      Estado del disco: $_selectedDiscoPL  
-
-
-    ''';
-
-    // Aquí puedes procesar el mensaje o enviarlo a algún servicio o base de datos
-    print(message);
+    Provider.of<PulidoraProvider>(context, listen: false).handleFirestoreOperation(action: "update",data: data, id: _selectedPulidoraId!);
 
     // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
@@ -87,6 +93,28 @@ class _EstadosPLState extends State<EstadosPL> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                 // Dropdown para seleccionar la planta eléctrica
+                Consumer<PulidoraProvider>(
+        builder: (context, provider, child) {
+          return Center(
+            child: DropdownButton<String>(
+              value: _selectedPulidoraId,
+              hint: Text('Selecciona una fecha'),
+              items: provider.pulidoraList.map((planta) {
+                return DropdownMenuItem<String>(
+                  value: planta.id,
+                  child: Text(planta.fecha.toString()),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedPulidoraId = newValue;
+                });
+              },
+            ),
+          );
+        },
+      ),// Fin del Dropdown de plantas eléctricas
                 Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceBetween, // Alinea los elementos a los extremos

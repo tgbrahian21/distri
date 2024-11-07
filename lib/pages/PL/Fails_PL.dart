@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/pulidora_provider.dart';
 
 class FailPL extends StatefulWidget {
   const FailPL({super.key});
@@ -8,64 +10,60 @@ class FailPL extends StatefulWidget {
 }
 
 class _FailPLState extends State<FailPL> {
-  bool _showDetails = false; // Controla si se deben mostrar los detalles
-  String? _almacenadoPorOperador; // Usamos String? para permitir null
-  String? _remitidoAMantenimiento;
+  String? _selectedPulidoraId;
 
-  bool _almacenadoError = false; // Para mostrar error en la primera opción
-  bool _mantenimientoError = false; // Para mostrar error en la segunda opción
+  @override
+  void initState() {
+    super.initState();
+    final pulidoraProvider =
+        Provider.of<PulidoraProvider>(context, listen: false);
+    pulidoraProvider.handleFirestoreOperation(
+        action: "fetch"); // Carga los datos al iniciar el widget
+  }
+  bool _showDetails = false; // Controla si se deben mostrar los detalles
+  String? _almacenadoPorOperador = ''; // Usamos String? para permitir null
+  String? _remitidoAMantenimiento = ''; // Usamos String? para permitir null
+  final _fallasController = TextEditingController(); // Para mostrar error en la segunda opción
+
+  // Para mostrar error en la segunda opción
 
   final _formKey = GlobalKey<FormState>();
 
-  void _validateAndSubmit() {
-    setState(() {
-      _almacenadoError = _almacenadoPorOperador == null;
-      _mantenimientoError = _remitidoAMantenimiento == null;
-    });
+   void _saveData() {
+    // Aquí puedes agregar la lógica para guardar los datos
+  if (!_showDetails) {
+    final data = Pulidora(
+    almacenadoporoperador: "No aplica",
+    remitidoamantenimiento: "No aplica",
+    fallas: "No aplica",
 
-    // Validar el formulario y los botones de radio
-    if (_formKey.currentState!.validate() && !_almacenadoError && !_mantenimientoError) {
-      // Mostrar éxito si todo está validado
-      print('Datos guardados');
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Éxito'),
-            content: const Text('Datos guardados con éxito'),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // cerrar ventana emergente
-                  Navigator.pop(context); // regresar al inicio
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      // Mostrar error si faltan campos
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Falta información'),
-            content: const Text('Por favor, llene todos los campos.'),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // cerrar ventana emergente
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+  );    
+
+    Provider.of<PulidoraProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedPulidoraId);
+   ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos enviados correctamente')),
+    );         
+
+  } else {
+    final data = Pulidora(
+    almacenadoporoperador: _almacenadoPorOperador ?? '',
+    remitidoamantenimiento: _remitidoAMantenimiento ?? '',
+    fallas: _fallasController.text,
+
+  );    
+
+    Provider.of<PulidoraProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedPulidoraId);
+
+            
+
   }
+  }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +99,29 @@ class _FailPLState extends State<FailPL> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Dropdown para seleccionar la planta eléctrica
+                      Consumer<PulidoraProvider>(
+                        builder: (context, provider, child) {
+                          return Center(
+                            child: DropdownButton<String>(
+                              value: _selectedPulidoraId,
+                              hint: Text('Selecciona una fecha'),
+                              items: provider.pulidoraList.map((planta) {
+                                return DropdownMenuItem<String>(
+                                  value: planta.id,
+                                  child: Text(planta.fecha.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  _selectedPulidoraId = newValue;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                      ), // Fin del Dropdown de plantas eléctricas
+                  const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -165,6 +186,7 @@ class _FailPLState extends State<FailPL> {
                               setState(() {
                                 _showDetails = false;
                               });
+                              _saveData();
                             },
                             child: const Text('No'),
                           ),
@@ -194,6 +216,10 @@ class _FailPLState extends State<FailPL> {
                           }
                           return null;
                         },
+                        onChanged: (value){
+                          _fallasController.text = value;
+                        },
+
                       ),
                       const SizedBox(height: 16),
                       const Text('El equipo fue:', style: TextStyle(fontSize: 16)),
@@ -234,11 +260,7 @@ class _FailPLState extends State<FailPL> {
                           ),
                         ],
                       ),
-                      if (_almacenadoError)
-                        const Text(
-                          'Por favor, seleccione una opción',
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -276,19 +298,54 @@ class _FailPLState extends State<FailPL> {
                           ),
                         ],
                       ),
-                      if (_mantenimientoError)
-                        const Text(
-                          'Por favor, seleccione una opción',
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      
 
                       const SizedBox(height: 16),
                       Center(
                         child: ElevatedButton(
-                          onPressed: _validateAndSubmit,
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _saveData();
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Éxito'),
+                                    content: const Text('Datos guardados con éxito'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context); // cerrar ventana emergente
+                                          Navigator.pop(context); // regresar al inicio
+                                        },
+                                        child: const Text('Aceptar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Falta información'),
+                                    content: const Text('Por favor, llene todos los campos'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context); // cerrar ventana emergente
+                                        },
+                                        child: const Text('Aceptar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 15.0, horizontal: 80.0),
+                            padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 80.0),
                             textStyle: const TextStyle(
                               fontSize: 18.0,
                               fontWeight: FontWeight.bold,
