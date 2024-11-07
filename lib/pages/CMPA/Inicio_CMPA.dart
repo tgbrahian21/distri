@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vista_practica/pages/CMPA/Estados_CMPA.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 
 import 'Datos_CMPA.dart';
@@ -121,7 +122,7 @@ class _PaginaCompacatadorState extends State<PaginaCompacatador> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const Pagemain(),
+                              builder: (context) => const EstadosCMPA(),
                             ));
                         // Handle Estado tap
                       },
