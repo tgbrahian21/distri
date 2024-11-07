@@ -7,10 +7,10 @@ class DatosCMPE extends StatefulWidget {
   const DatosCMPE({super.key});
 
   @override
-  State<DatosCMPE> createState() => _DatosPLantaelecState();
+  State<DatosCMPE> createState() => _DatosCompresorState();
 }
 
-class _DatosPLantaelecState extends State<DatosCMPE> {
+class _DatosCompresorState extends State<DatosCMPE> {
 
   final _formKey = GlobalKey<FormState>();
   final _fechaController = TextEditingController();
