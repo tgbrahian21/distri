@@ -8,9 +8,13 @@ import 'package:sizer/sizer.dart';
 import 'package:vista_practica/firebase_options.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/provider/auth_provider.dart';
+import 'package:vista_practica/provider/compactador_provider.dart';
+import 'package:vista_practica/provider/compresor_provider.dart';
 import 'package:vista_practica/provider/login_provider.dart';
 import 'package:vista_practica/provider/plantaelec_provider.dart';
+import 'package:vista_practica/provider/pulidora_provider.dart';
 import 'package:vista_practica/provider/register_provider.dart';
+import 'package:vista_practica/provider/taladro_provider.dart';
 import 'package:vista_practica/routes/app_routes.dart';
 import 'package:vista_practica/routes/routes.dart';
 import 'package:vista_practica/services/local_storage.dart';
@@ -41,6 +45,10 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(lazy: false,create: (_) => AuthProviderP()),
             ChangeNotifierProvider(lazy: false,create: (_) => RegisterProvider()),
             ChangeNotifierProvider(lazy: false,create: (_) => PlantaelecProvider()),
+            ChangeNotifierProvider(lazy: false,create: (_) => PulidoraProvider()),
+            ChangeNotifierProvider(lazy: false,create: (_) => TaladroProvider()),
+            ChangeNotifierProvider(lazy: false,create: (_) => CompresorProvider()),
+            ChangeNotifierProvider(lazy: false,create: (_) => CompactadorProvider()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [

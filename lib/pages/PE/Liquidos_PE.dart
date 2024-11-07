@@ -79,7 +79,7 @@ class _LiquidosPEState extends State<LiquidosPE> {
                       return Center(
                         child: DropdownButton<String>(
                           value: _selectedPlantaId,
-                          hint: Text('Selecciona una planta eléctrica'),
+                          hint: Text('Selecciona una fecha'),
                           items: provider.plantaelecList.map((planta) {
                             return DropdownMenuItem<String>(
                               value: planta.id,

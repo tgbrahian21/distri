@@ -25,9 +25,9 @@ class Plantaelec {
   final String llantas;
   final String combustible;
   final String aceite;
-  final String fallas;
   final String almacenadoporoperador;
   final String remitidoamantenimiento;
+  final String fallas;
 
   Plantaelec({
     this.id = '',
@@ -53,9 +53,9 @@ class Plantaelec {
     this.llantas = '',
     this.combustible = '',
     this.aceite = '',
-    this.fallas = '',
     this.almacenadoporoperador = '',
     this.remitidoamantenimiento = '',
+    this.fallas = '',
   });
 
   Map<String, dynamic> toMap() => {
@@ -81,9 +81,9 @@ class Plantaelec {
         'llantas': llantas,
         'combustible': combustible,
         'aceite': aceite,
-        'fallas': fallas,
         'almacenadoporoperador': almacenadoporoperador,
         'remitidoamantenimiento': remitidoamantenimiento,
+        'fallas': fallas,
       }..removeWhere((_, value) => value == '');
 
   factory Plantaelec.fromMap(Map<String, dynamic> data, String documentId) =>
@@ -111,6 +111,9 @@ class Plantaelec {
         llantas: data['llantas'] ?? '',
         combustible: data['combustible'] ?? '',
         aceite: data['aceite'] ?? '',
+        almacenadoporoperador: data['almacenadoporoperador'] ?? '',
+        remitidoamantenimiento: data['remitidoamantenimiento'] ?? '',
+        fallas: data['fallas'] ?? '',
       );
 }
 
@@ -132,7 +135,7 @@ class PlantaelecProvider extends ChangeNotifier {
       } else if (action == 'update' && data != null && id != null) {
         await collection.doc(id).update(data.toMap());
       } else if (action == 'fetch') {
-        final snapshot = await collection.get();
+        final snapshot = await collection.orderBy('fecha', descending: true).limit(3).get();
         _plantaelecList = snapshot.docs
             .map((doc) => Plantaelec.fromMap(doc.data(), doc.id))
             .toList();

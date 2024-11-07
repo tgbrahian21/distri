@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/taladro_provider.dart';
 
 class EstadosTA extends StatefulWidget {
   const EstadosTA({super.key});
@@ -8,12 +10,20 @@ class EstadosTA extends StatefulWidget {
 }
 
 class _EstadosTAState extends State<EstadosTA> {
+
+String? _selectedTaladroId;
+
+  @override
+  void initState() {
+    super.initState();
+    final taladroProvider = Provider.of<TaladroProvider>(context, listen: false);
+    taladroProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
+
   final _formKey = GlobalKey<FormState>();
 
   String? _selectedConexiones;
   String? _selectedInterruptor;
-
-
   String? _selectedEstadoCuerpo;
   String? _selectedGuardasTa;
   String? _selectedInterruptorAccionMartillo;
@@ -25,22 +35,19 @@ class _EstadosTAState extends State<EstadosTA> {
   // Nueva función para enviar los datos seleccionados
   void _saveData() {
     // Recolectar los valores seleccionados
-    String message = '''
-      Se verificó el estado de conexiones eléctricas: $_selectedConexiones
-      Estado del interruptor de encendido: $_selectedInterruptor
-      
-      Estado del cuerpo $_selectedEstadoCuerpo
-      Estado de la guarda: $_selectedGuardasTa
-      Estado del interruptor de accion de martillo: $_selectedInterruptorAccionMartillo
-      Estado del mango: $_selectedMango
-      Estado del boton de seguro: $_selectedBotonSeguro
+    final data = Taladro(
+      conexiones: _selectedConexiones!,
+      interruptor: _selectedInterruptor!,
+      estadocuerpo: _selectedEstadoCuerpo!,
+      guardasta: _selectedGuardasTa!,
+      interruptoraccionmartillo: _selectedInterruptorAccionMartillo!,
+      mango: _selectedMango!,
+      botonseguro: _selectedBotonSeguro!,
+      usotaladro: _usoTaladro,
 
-      El taladro se puede usar: $_usoTaladro
+    );
 
-    ''';
-
-    // Aquí puedes procesar el mensaje o enviarlo a algún servicio o base de datos
-    print(message);
+    Provider.of<TaladroProvider>(context, listen: false).handleFirestoreOperation(action: "update",data: data, id: _selectedTaladroId!);
 
     // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
@@ -79,6 +86,29 @@ class _EstadosTAState extends State<EstadosTA> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Dropdown para seleccionar la planta eléctrica
+                Consumer<TaladroProvider>(
+        builder: (context, provider, child) {
+          return Center(
+            child: DropdownButton<String>(
+              value: _selectedTaladroId,
+              hint: Text('Selecciona una fecha'),
+              items: provider.taladroList.map((planta) {
+                return DropdownMenuItem<String>(
+                  value: planta.id,
+                  child: Text(planta.fecha.toString()),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedTaladroId = newValue;
+                });
+              },
+            ),
+          );
+        },
+      ),
+      // Fin del Dropdown de plantas eléctricas
                 Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceBetween, // Alinea los elementos a los extremos

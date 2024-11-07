@@ -1,42 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/pulidora_provider.dart';
 
 class DatosPL extends StatefulWidget {
   const DatosPL({super.key});
 
   @override
-  State<DatosPL> createState() => _DatosPLantaelecState();
+  State<DatosPL> createState() => _DatosPulidoraState();
 }
 
-class _DatosPLantaelecState extends State<DatosPL> {
+class _DatosPulidoraState extends State<DatosPL> {
 
   final _formKey = GlobalKey<FormState>();
   final _fechaController = TextEditingController();
-  final _marcaController = TextEditingController();
-  final _modeloController = TextEditingController();
   final _codificacionController = TextEditingController();
   final _localizacionController = TextEditingController();
-  final _operadorController = TextEditingController();
+  
 
   void _saveData() {
     // Aquí va la lógica para guardar los datos
     // Por ejemplo, puedes utilizar una base de datos o una API para guardar los datos
-    print('Fecha: ${_fechaController.text}');
-    print('Marca: ${_marcaController.text}');
-    print('Modelo: ${_modeloController.text}');
-    print('Codificación: ${_codificacionController.text}');
-    print('Localización: ${_localizacionController.text}');
-    print('Operador: ${_operadorController.text}');
+    final data = Pulidora(
+      fecha: _fechaController.text,
+      codificacion: _codificacionController.text,
+      localizacion: _localizacionController.text,
+    );
+
+    Provider.of<PulidoraProvider>(context, listen: false).handleFirestoreOperation(action: "add",data: data);
+
   }
 
   @override
   void dispose() {
     _fechaController.dispose();
-    _marcaController.dispose();
-    _modeloController.dispose();
     _codificacionController.dispose();
     _localizacionController.dispose();
-    _operadorController.dispose();
     super.dispose();
   }
 
@@ -224,16 +223,13 @@ class _DatosPLantaelecState extends State<DatosPL> {
                         // Puedes acceder a los valores de los controladores aquí:
                         // _fechaController.text
                         // _marcaController.text
+                        _saveData(); // función para guardar datos
                         // ...
                         // Luego, limpia los campos:
                         _fechaController.clear();
-                        _marcaController.clear();
-                        _modeloController.clear();
                         _codificacionController.clear();
                         _localizacionController.clear();
-                        _operadorController.clear(); 
                         // Muestra un mensaje de éxito o navega a otra pantalla
-                        _saveData(); // función para guardar datos
                         showDialog(
                           context: context,
                           builder: (context) {

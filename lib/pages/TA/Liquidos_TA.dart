@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/taladro_provider.dart';
 
 class LiquidosTA extends StatefulWidget {
   const LiquidosTA({Key? key}) : super(key: key);
@@ -8,11 +10,36 @@ class LiquidosTA extends StatefulWidget {
 }
 
 class _LiquidosTAState extends State<LiquidosTA> {
+  String? _selectedTaladroId;
+
+  @override
+  void initState() {
+    super.initState();
+    final taladroProvider =
+        Provider.of<TaladroProvider>(context, listen: false);
+    taladroProvider.handleFirestoreOperation(
+        action: "fetch"); // Carga los datos al iniciar el widget
+  }
+
   final _formKey = GlobalKey<FormState>();
+  final _combustible = TextEditingController();
+  final _aceite = TextEditingController();
 
   void _saveData() {
     // Aquí puedes agregar la lógica para guardar los datos
-    print('Datos guardados');
+    final data = Taladro(
+      combustible: _combustible.text,
+      aceite: _aceite.text,
+    );
+
+    Provider.of<TaladroProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedTaladroId!);
+
+    // Mostrar mensaje de éxito
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos enviados correctamente')),
+    );
   }
 
   @override
@@ -34,8 +61,7 @@ class _LiquidosTAState extends State<LiquidosTA> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/Logo_distriservicios.png'),
+                image: AssetImage('assets/images/Logo_distriservicios.png'),
                 fit: BoxFit.scaleDown,
                 opacity: 0.1,
               ),
@@ -48,6 +74,29 @@ class _LiquidosTAState extends State<LiquidosTA> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Dropdown para seleccionar la planta eléctrica
+                  Consumer<TaladroProvider>(
+                    builder: (context, provider, child) {
+                      return Center(
+                        child: DropdownButton<String>(
+                          value: _selectedTaladroId,
+                          hint: Text('Selecciona una fecha'),
+                          items: provider.taladroList.map((planta) {
+                            return DropdownMenuItem<String>(
+                              value: planta.id,
+                              child: Text(planta.fecha.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedTaladroId = newValue;
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -111,6 +160,7 @@ class _LiquidosTAState extends State<LiquidosTA> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _combustible,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Nivel de combustible',
@@ -135,6 +185,7 @@ class _LiquidosTAState extends State<LiquidosTA> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _aceite,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Cambios de aceite',
@@ -153,6 +204,8 @@ class _LiquidosTAState extends State<LiquidosTA> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _saveData();
+                        _aceite.clear();
+                        _combustible.clear();
                         showDialog(
                           context: context,
                           builder: (context) {
