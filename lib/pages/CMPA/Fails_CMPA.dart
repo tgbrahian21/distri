@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/compactador_provider.dart';
 
 class FailCMPA extends StatefulWidget {
   const FailCMPA({super.key});
@@ -8,63 +10,53 @@ class FailCMPA extends StatefulWidget {
 }
 
 class _FailCMPAState extends State<FailCMPA> {
+  String? _selectedCompactadorId;
+
+  @override
+  void initState() {
+    super.initState();
+    final compactadorProvider = Provider.of<CompactadorProvider>(context, listen: false);
+    compactadorProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
   bool _showDetails = false; // Controla si se deben mostrar los detalles
   String? _almacenadoPorOperador; // Usamos String? para permitir null
   String? _remitidoAMantenimiento;
-
-  bool _almacenadoError = false; // Para mostrar error en la primera opción
-  bool _mantenimientoError = false; // Para mostrar error en la segunda opción
+  final _fallasController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
-  void _validateAndSubmit() {
-    setState(() {
-      _almacenadoError = _almacenadoPorOperador == null;
-      _mantenimientoError = _remitidoAMantenimiento == null;
-    });
+  void _saveData() {
+    // Aquí puedes agregar la lógica para guardar los datos
+  if (!_showDetails) {
+    final data = Compactador(
+    almacenadoporoperador: "No aplica",
+    remitidoamantenimiento: "No aplica",
+    fallas: "No aplica",
 
-    // Validar el formulario y los botones de radio
-    if (_formKey.currentState!.validate() && !_almacenadoError && !_mantenimientoError) {
-      // Mostrar éxito si todo está validado
-      print('Datos guardados');
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Éxito'),
-            content: const Text('Datos guardados con éxito'),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // cerrar ventana emergente
-                  Navigator.pop(context); // regresar al inicio
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      // Mostrar error si faltan campos
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Falta información'),
-            content: const Text('Por favor, llene todos los campos.'),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // cerrar ventana emergente
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+  );    
+
+    Provider.of<CompactadorProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedCompactadorId);
+   ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos enviados correctamente')),
+    );         
+
+  } else {
+    final data = Compactador(
+    almacenadoporoperador: _almacenadoPorOperador ?? '',
+    remitidoamantenimiento: _remitidoAMantenimiento ?? '',
+    fallas: _fallasController.text,
+
+  );    
+
+    Provider.of<CompactadorProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedCompactadorId);
+
+            
+
+  }
   }
 
   @override
@@ -101,6 +93,29 @@ class _FailCMPAState extends State<FailCMPA> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Dropdown para seleccionar la planta eléctrica
+                  Consumer<CompactadorProvider>(
+                    builder: (context, provider, child) {
+                      return Center(
+                        child: DropdownButton<String>(
+                          value: _selectedCompactadorId,
+                          hint: Text('Selecciona una fecha'),
+                          items: provider.compactadorList.map((planta) {
+                            return DropdownMenuItem<String>(
+                              value: planta.id,
+                              child: Text(planta.fecha.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedCompactadorId = newValue;
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -165,6 +180,7 @@ class _FailCMPAState extends State<FailCMPA> {
                               setState(() {
                                 _showDetails = false;
                               });
+                              _saveData();
                             },
                             child: const Text('No'),
                           ),
@@ -193,6 +209,9 @@ class _FailCMPAState extends State<FailCMPA> {
                             return 'Por favor, ingrese los datos.';
                           }
                           return null;
+                        },
+                         onChanged: (value) {
+                          _fallasController.text = value;
                         },
                       ),
                       const SizedBox(height: 16),
@@ -234,11 +253,7 @@ class _FailCMPAState extends State<FailCMPA> {
                           ),
                         ],
                       ),
-                      if (_almacenadoError)
-                        const Text(
-                          'Por favor, seleccione una opción',
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -276,19 +291,54 @@ class _FailCMPAState extends State<FailCMPA> {
                           ),
                         ],
                       ),
-                      if (_mantenimientoError)
-                        const Text(
-                          'Por favor, seleccione una opción',
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      
 
                       const SizedBox(height: 16),
                       Center(
                         child: ElevatedButton(
-                          onPressed: _validateAndSubmit,
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _saveData();
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Éxito'),
+                                    content: const Text('Datos guardados con éxito'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context); // cerrar ventana emergente
+                                          Navigator.pop(context); // regresar al inicio
+                                        },
+                                        child: const Text('Aceptar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Falta información'),
+                                    content: const Text('Por favor, llene todos los campos'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context); // cerrar ventana emergente
+                                        },
+                                        child: const Text('Aceptar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 15.0, horizontal: 80.0),
+                            padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 80.0),
                             textStyle: const TextStyle(
                               fontSize: 18.0,
                               fontWeight: FontWeight.bold,

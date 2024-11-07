@@ -15,8 +15,8 @@ class _FailCMPEState extends State<FailCMPE> {
   @override
   void initState() {
     super.initState();
-    final taladroProvider = Provider.of<CompresorProvider>(context, listen: false);
-    taladroProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+    final compresorProvider = Provider.of<CompresorProvider>(context, listen: false);
+    compresorProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
   }
   bool _showDetails = false; // Controla si se deben mostrar los detalles
   String? _almacenadoPorOperador; // Usamos String? para permitir null

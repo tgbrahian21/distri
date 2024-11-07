@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/compactador_provider.dart';
 
 class LiquidosCMPA extends StatefulWidget {
   const LiquidosCMPA({Key? key}) : super(key: key);
@@ -8,11 +10,36 @@ class LiquidosCMPA extends StatefulWidget {
 }
 
 class _LiquidosCMPAState extends State<LiquidosCMPA> {
+
+  String? _selectedCompactadorId;
+
+  @override
+  void initState() {
+    super.initState();
+    final compactadorProvider = Provider.of<CompactadorProvider>(context, listen: false);
+    compactadorProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
   final _formKey = GlobalKey<FormState>();
+   final _combustible = TextEditingController();
+  final _aceite = TextEditingController();
 
   void _saveData() {
     // Aquí puedes agregar la lógica para guardar los datos
-    print('Datos guardados');
+    final data = Compactador(
+      combustible: _combustible.text,
+      aceite: _aceite.text,
+    );
+
+    Provider.of<CompactadorProvider>(context, listen: false)
+        .handleFirestoreOperation(
+            action: "update", data: data, id: _selectedCompactadorId!);
+
+    // Mostrar mensaje de éxito
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos enviados correctamente')),
+    );
+
+
   }
 
   @override
@@ -48,6 +75,29 @@ class _LiquidosCMPAState extends State<LiquidosCMPA> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Dropdown para seleccionar la planta eléctrica
+                  Consumer<CompactadorProvider>(
+                    builder: (context, provider, child) {
+                      return Center(
+                        child: DropdownButton<String>(
+                          value: _selectedCompactadorId,
+                          hint: Text('Selecciona una fecha'),
+                          items: provider.compactadorList.map((planta) {
+                            return DropdownMenuItem<String>(
+                              value: planta.id,
+                              child: Text(planta.fecha.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedCompactadorId = newValue;
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -111,6 +161,7 @@ class _LiquidosCMPAState extends State<LiquidosCMPA> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _combustible,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Nivel de combustible',
@@ -135,6 +186,7 @@ class _LiquidosCMPAState extends State<LiquidosCMPA> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _aceite,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Cambios de aceite',
@@ -153,6 +205,8 @@ class _LiquidosCMPAState extends State<LiquidosCMPA> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _saveData();
+                        _aceite.clear();
+                        _combustible.clear();
                         showDialog(
                           context: context,
                           builder: (context) {
