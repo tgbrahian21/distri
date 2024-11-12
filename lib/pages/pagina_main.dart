@@ -67,11 +67,7 @@ class _PagemainState extends State<Pagemain> {
                      SizedBox(
                        height: 10.h,
                        width: 80.w,
-                       child: Image.network(
-                         'https://www.distriserviciosesp.com/assets/img/Icon2-1-1536x265.png',
-                         height: 400,
-                         width: 400,
-                       ),
+                       child: Image.asset('assets/images/distriservicios.png')
                      ),
 
                      
