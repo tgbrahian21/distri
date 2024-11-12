@@ -8,11 +8,6 @@ class Compactador {
   final String fecha;
   final String codificacion;
   final String localizacion;
-  final String interpresioncmpe;
-  final String manometrocmpe;
-  final String horometrocmpe;
-  final String valvulacmpe;
-  final String soportescmpe;
   final String combustible;
   final String aceite;
   final String almacenadoporoperador;
@@ -26,11 +21,6 @@ class Compactador {
     this.fecha = '',
     this.codificacion = '',
     this.localizacion = '',
-    this.interpresioncmpe = '',
-    this.manometrocmpe = '',
-    this.horometrocmpe = '',
-    this.valvulacmpe = '',
-    this.soportescmpe = '',
     this.combustible = '',
     this.aceite = '',
     this.almacenadoporoperador = '',
@@ -45,11 +35,6 @@ class Compactador {
         'fecha': fecha,
         'codificacion': codificacion,
         'localizacion': localizacion,
-        'interpresioncmpe': interpresioncmpe,
-        'manometrocmpe': manometrocmpe,
-        'horometrocmpe': horometrocmpe,
-        'valvulacmpe': valvulacmpe,
-        'soportescmpe': soportescmpe,
         'combustible': combustible,
         'aceite': aceite,
         'almacenadoporoperador': almacenadoporoperador,
@@ -65,11 +50,6 @@ class Compactador {
         fecha: data['fecha'] ?? '',
         codificacion: data['codificacion'] ?? '',
         localizacion: data['localizacion'] ?? '',
-        interpresioncmpe: data['interpresioncmpe'] ?? '',
-        manometrocmpe: data['manometrocmpe'] ?? '',
-        horometrocmpe: data['horometrocmpe'] ?? '',
-        valvulacmpe: data['valvulacmpe'] ?? '',
-        soportescmpe: data['soportescmpe'] ?? '',
         combustible: data['combustible'] ?? '',
         aceite: data['aceite'] ?? '',
         almacenadoporoperador: data['almacenadoporoperador'] ?? '',
