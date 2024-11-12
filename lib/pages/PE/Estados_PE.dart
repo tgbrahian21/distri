@@ -114,7 +114,7 @@ class _EstadosPEState extends State<EstadosPE> {
               items: provider.plantaelecList.map((planta) {
                 return DropdownMenuItem<String>(
                   value: planta.id,
-                  child: Text(planta.fecha.toString()),
+                  child: Text('${planta.fecha} - ${planta.codificacion}'),
                 );
               }).toList(),
               onChanged: (newValue) {
