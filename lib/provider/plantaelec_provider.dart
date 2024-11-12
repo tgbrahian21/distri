@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class Plantaelec {
-  final String id;
+  String id;
   final String fecha;
   final String codificacion;
   final String localizacion;
@@ -117,9 +118,11 @@ class Plantaelec {
       );
 }
 
+
 class PlantaelecProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Plantaelec> _plantaelecList = [];
+  final Box _hiveBox = Hive.box('plantaelec');
 
   List<Plantaelec> get plantaelecList => _plantaelecList;
 
@@ -130,19 +133,77 @@ class PlantaelecProvider extends ChangeNotifier {
   }) async {
     try {
       final collection = _firestore.collection('plantaelec');
+
       if (action == 'add' && data != null) {
-        await collection.add(data.toMap());
+        await _addOffline(data, collection);
       } else if (action == 'update' && data != null && id != null) {
-        await collection.doc(id).update(data.toMap());
+        await _updateOffline(data, id, collection);
       } else if (action == 'fetch') {
-        final snapshot = await collection.orderBy('fecha', descending: true).limit(3).get();
-        _plantaelecList = snapshot.docs
-            .map((doc) => Plantaelec.fromMap(doc.data(), doc.id))
-            .toList();
+        await _fetchOffline(collection);
       }
+
       notifyListeners();
     } catch (e) {
       _handleError(e, 'operación $action');
+    }
+  }
+
+  Future<void> _addOffline(Plantaelec data, CollectionReference collection) async {
+    try {
+      final docRef = await collection.add(data.toMap());
+      data.id = docRef.id;
+      await _hiveBox.put(docRef.id, data.toMap());
+    } catch (e) {
+      // Añadir a Hive cuando no hay conexión
+      final newId = DateTime.now().millisecondsSinceEpoch.toString();
+      data.id = newId;
+      await _hiveBox.put(newId, data.toMap());
+    }
+  }
+
+  Future<void> _updateOffline(Plantaelec data, String id, CollectionReference collection) async {
+    try {
+      await collection.doc(id).update(data.toMap());
+      await _hiveBox.put(id, data.toMap());
+    } catch (e) {
+      // Si no hay conexión, actualizar solo en Hive
+      await _hiveBox.put(id, data.toMap());
+    }
+  }
+
+  Future<void> _fetchOffline(CollectionReference collection) async {
+    try {
+      final snapshot = await collection.orderBy('fecha', descending: true).limit(4).get();
+      _plantaelecList = snapshot.docs
+          .map((doc) => Plantaelec.fromMap(Map<String, dynamic>.from(doc.data() as Map), doc.id))
+          .toList();
+
+      // Actualizar Hive con los datos obtenidos
+      for (var doc in snapshot.docs) {
+        await _hiveBox.put(doc.id, doc.data());
+      }
+    } catch (e) {
+      // Si no hay conexión, leer los datos desde Hive
+      _plantaelecList = _hiveBox.values
+          .map((data) => Plantaelec.fromMap(Map<String, dynamic>.from(data), data['id']))
+          .toList();
+    }
+  }
+
+  Future<void> syncOfflineData() async {
+    final collection = _firestore.collection('plantaelec');
+
+    for (var key in _hiveBox.keys) {
+      final data = _hiveBox.get(key) as Map<String, dynamic>;
+      final documentId = data['id'];
+
+      try {
+        // Si el documento existe en Firestore, actualizarlo
+        await collection.doc(documentId).set(data);
+        await _hiveBox.delete(key);
+      } catch (e) {
+        if (kDebugMode) print('Error sincronizando datos $documentId: $e');
+      }
     }
   }
 
@@ -150,3 +211,4 @@ class PlantaelecProvider extends ChangeNotifier {
     if (kDebugMode) print('Error en $context: $error');
   }
 }
+
