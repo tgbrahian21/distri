@@ -1,10 +1,13 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'package:vista_practica/firebase_options.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/provider/auth_provider.dart';
@@ -20,14 +23,17 @@ import 'package:vista_practica/routes/routes.dart';
 import 'package:vista_practica/services/local_storage.dart';
 import 'package:vista_practica/services/push_notification.dart';
 
-
 void main() async {
-  Intl.defaultLocale = 'es_ES';
-  await initializeDateFormatting();
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Hive.initFlutter(); // Inicializa Hive usando Hive Flutter
+  await Hive.openBox('plantaelec'); // Abre una caja llamada 'plantaelec'
   await PushNotificationService.initializeApp();
   await LocalStorage().init();
   final isLogged = LocalStorage().getIsLoggedIn();
+
+  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
+
   runApp(MyApp(isLogged: isLogged));
 }
 
@@ -41,46 +47,31 @@ class MyApp extends StatelessWidget {
       builder: (context, orientation, deviceType) {
         return MultiProvider(
           providers: [
-            ChangeNotifierProvider(lazy: false,create: (_) => LoginProvider()),
-            ChangeNotifierProvider(lazy: false,create: (_) => AuthProviderP()),
-            ChangeNotifierProvider(lazy: false,create: (_) => RegisterProvider()),
-            ChangeNotifierProvider(lazy: false,create: (_) => PlantaelecProvider()),
-            ChangeNotifierProvider(lazy: false,create: (_) => PulidoraProvider()),
-            ChangeNotifierProvider(lazy: false,create: (_) => TaladroProvider()),
-            ChangeNotifierProvider(lazy: false,create: (_) => CompresorProvider()),
-            ChangeNotifierProvider(lazy: false,create: (_) => CompactadorProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => LoginProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => AuthProviderP()),
+            ChangeNotifierProvider(lazy: false, create: (_) => RegisterProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => PlantaelecProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => PulidoraProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => TaladroProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => CompresorProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => CompactadorProvider()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
-              // ... app-specific localization delegate[s] here
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [
-               Locale('en','US'), // English
-               Locale('es','ES'), // Hebrew
+              Locale('en', 'US'), // English
+              Locale('es', 'ES'), // Spanish
             ],
             debugShowCheckedModeBanner: false,
             initialRoute: Routes.firsh,
             routes: appRoutes,
-            // Add other properties as needed
           ),
         );
       },
     );
   }
-/*  Widget Imagenfondo() {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: FileImage(File('assets/images/Logo_distriservicios.jpg', )),
-          fit: BoxFit.cover
-        ),
-      ),
-      child: Center(child: Text("")),
-    );
-  }
-*/
-  
 }
