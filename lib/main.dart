@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-
 import 'package:vista_practica/firebase_options.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/provider/auth_provider.dart';
@@ -28,6 +27,10 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter(); // Inicializa Hive usando Hive Flutter
   await Hive.openBox('plantaelec'); // Abre una caja llamada 'plantaelec'
+  await Hive.openBox('compactador'); // Abre una caja llamada 'compactador'
+  await Hive.openBox('compresor'); // Abre una caja llamada 'compresor'
+  await Hive.openBox('pulidora'); // Abre una caja llamada 'pulidora'
+  await Hive.openBox('taladro'); // Abre una caja llamada 'taladro'
   await PushNotificationService.initializeApp();
   await LocalStorage().init();
   final isLogged = LocalStorage().getIsLoggedIn();

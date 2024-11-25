@@ -1,11 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:vista_practica/pages/pagina_main.dart';
-
+import 'package:provider/provider.dart';
+import 'package:vista_practica/services/ta_service.dart';
 import 'Estados_TA.dart';
 import 'Datos_TA.dart';
 import 'Liquidos_TA.dart';
 import 'Fails_TA.dart';
-
+import 'package:vista_practica/provider/taladro_provider.dart';
 
 class PaginaTaladro extends StatefulWidget {
   static const String routeName = 'Pagina Taladro';
@@ -16,6 +19,36 @@ class PaginaTaladro extends StatefulWidget {
 }
 
 class _PaginaTaladroState extends State<PaginaTaladro> {
+  String? _selectedTaladroId;
+  String? userRole; // Para almacenar el rol del usuario
+
+  @override
+  void initState() {
+    super.initState();
+    final taladroProvider = Provider.of<TaladroProvider>(context, listen: false);
+    taladroProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+    _getUserRole(); // Obtener el rol del usuario
+  }
+
+  // Método para obtener el rol del usuario actual
+  Future<void> _getUserRole() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          setState(() {
+            userRole = userDoc['role'];
+          });
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error al obtener el rol del usuario: $e");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,12 +58,7 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const Pagemain(),
-                ));
-            // Handle back button press
+            Navigator.of(context).pop();
           },
         ),
         title: const Text('Preoperacional'),
@@ -46,18 +74,15 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceBetween, // Alinea los elementos a los extremos
+              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Alinea los elementos a los extremos
               children: [
                 const Column(
-                  crossAxisAlignment: CrossAxisAlignment
-                      .start, // Alinea el texto a la izquierda
+                  crossAxisAlignment: CrossAxisAlignment.start, // Alinea el texto a la izquierda
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
                           left: 60.0,
-                          bottom:
-                              10.0), // Ajusta el valor de padding según sea necesario
+                          bottom: 10.0), // Ajusta el valor de padding según sea necesario
                       child: Text(
                         'Taladro',
                         style: TextStyle(
@@ -92,7 +117,7 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
             Container(
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.only(left: 10),
-                child: const Text('Informacion General')),
+                child: const Text('Información General')),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Card(
@@ -129,7 +154,7 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
                     ListTile(
                       leading: const ImageIcon(
                           AssetImage('assets/icons/liquidos.png')),
-                      title: const Text('Liquidos y Observaciones'),
+                      title: const Text('Líquidos y Observaciones'),
                       trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         Navigator.push(
@@ -137,7 +162,7 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
                             MaterialPageRoute(
                               builder: (context) => const LiquidosTA(),
                             ));
-                        // Handle Liquidos tap
+                        // Handle Líquidos tap
                       },
                     ),
                   ],
@@ -145,28 +170,6 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
               ),
             ),
             const SizedBox(height: 20),
-            // Container(
-            //     alignment: Alignment.centerLeft,
-            //     padding: const EdgeInsets.only(left: 10),
-            //     child: const Text('Operador')),
-            // Padding(
-            //   padding: const EdgeInsets.all(8.0),
-            //   child: Card(
-            //     color: const Color.fromARGB(255, 255, 255, 255),
-            //     child: Column(
-            //       children: [
-            //         ListTile(
-            //           leading: const Icon(Icons.edit_note),
-            //           title: const Text('Firma y observaciones'),
-            //           trailing: const Icon(Icons.arrow_forward_ios),
-            //           onTap: () {
-            //             // Handle Firma y observaciones tap
-            //           },
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
             const SizedBox(height: 20),
             Container(
                 alignment: Alignment.centerLeft,
@@ -195,6 +198,71 @@ class _PaginaTaladroState extends State<PaginaTaladro> {
                 ),
               ),
             ),
+            if (userRole == 'admin' || userRole == 'superAdmin') ...[
+              // Mostrar solo si el usuario tiene el rol adecuado
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 10),
+                child: const Text('Generar Reporte del Taladro'),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Card(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  child: Column(
+                    children: [
+                      Consumer<TaladroProvider>(
+                        builder: (context, provider, child) {
+                          return DropdownButtonFormField<String>(
+                            value: _selectedTaladroId,
+                            hint: const Text('Selecciona un registro para el reporte'),
+                            items: provider.taladroList.map((taladro) {
+                              return DropdownMenuItem<String>(
+                                value: taladro.id,
+                                child: Text('${taladro.fecha} - ${taladro.codificacion}'),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedTaladroId = newValue;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Registro de Taladro',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor, seleccione un registro';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _selectedTaladroId == null
+                            ? null
+                            : () async {
+                                final reportService = TaladroReportService();
+                                await reportService.generateAndShareTaladroReport(_selectedTaladroId!, 'brahianservidor4@gmail.com');
+                              },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15.0, horizontal: 80.0),
+                          textStyle: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Text('Generar Reporte PDF'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
