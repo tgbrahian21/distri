@@ -1,10 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:vista_practica/pages/pagina_main.dart';
-
+import 'package:provider/provider.dart';
+import 'package:vista_practica/services/cmpe_service.dart';
 import 'Datos_CMPE.dart';
 import 'Estados_CMPE.dart';
 import 'Liquidos_CMPE.dart';
 import 'Fails_CMPE.dart';
+import 'package:vista_practica/provider/compresor_provider.dart';
 
 class PaginaCMPE extends StatefulWidget {
   static const String routeName = 'Pagina Compresor';
@@ -15,6 +19,36 @@ class PaginaCMPE extends StatefulWidget {
 }
 
 class _PaginaCMPEState extends State<PaginaCMPE> {
+  String? _selectedCompresorId;
+  String? userRole; // Para almacenar el rol del usuario
+
+  @override
+  void initState() {
+    super.initState();
+    final compresorProvider = Provider.of<CompresorProvider>(context, listen: false);
+    compresorProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+    _getUserRole(); // Obtener el rol del usuario
+  }
+
+  // Método para obtener el rol del usuario actual
+  Future<void> _getUserRole() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          setState(() {
+            userRole = userDoc['role'];
+          });
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error al obtener el rol del usuario: $e");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,12 +58,7 @@ class _PaginaCMPEState extends State<PaginaCMPE> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const Pagemain(),
-                ));
-            // Handle back button press
+            Navigator.of(context).pop();
           },
         ),
         title: const Text('Preoperacional'),
@@ -144,28 +173,6 @@ class _PaginaCMPEState extends State<PaginaCMPE> {
               ),
             ),
             const SizedBox(height: 20),
-            // Container(
-            //     alignment: Alignment.centerLeft,
-            //     padding: const EdgeInsets.only(left: 10),
-            //     child: const Text('Operador')),
-            // Padding(
-            //   padding: const EdgeInsets.all(8.0),
-            //   child: Card(
-            //     color: const Color.fromARGB(255, 255, 255, 255),
-            //     child: Column(
-            //       children: [
-            //         ListTile(
-            //           leading: const Icon(Icons.edit_note),
-            //           title: const Text('Firma y observaciones'),
-            //           trailing: const Icon(Icons.arrow_forward_ios),
-            //           onTap: () {
-            //             // Handle Firma y observaciones tap
-            //           },
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
             const SizedBox(height: 20),
             Container(
                 alignment: Alignment.centerLeft,
@@ -194,9 +201,75 @@ class _PaginaCMPEState extends State<PaginaCMPE> {
                 ),
               ),
             ),
+            if (userRole == 'admin' || userRole == 'superAdmin') ...[
+              // Mostrar solo si el usuario tiene el rol adecuado
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 10),
+                child: const Text('Generar Reporte del Compresor'),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Card(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  child: Column(
+                    children: [
+                      Consumer<CompresorProvider>(
+                        builder: (context, provider, child) {
+                          return DropdownButtonFormField<String>(
+                            value: _selectedCompresorId,
+                            hint: const Text('Selecciona un registro para el reporte'),
+                            items: provider.compresorList.map((compresor) {
+                              return DropdownMenuItem<String>(
+                                value: compresor.id,
+                                child: Text('${compresor.fecha} - ${compresor.codificacion}'),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedCompresorId = newValue;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Registro de Compresor',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor, seleccione un registro';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _selectedCompresorId == null
+                            ? null
+                            : () async {
+                                final reportService = CompresorReportService();
+                                await reportService.generateAndShareCompresorReport(_selectedCompresorId!, 'brahianservidor4@gmail.com');
+                              },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15.0, horizontal: 80.0),
+                          textStyle: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Text('Generar Reporte PDF'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 }
+

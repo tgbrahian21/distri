@@ -33,6 +33,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  barcode:
+    dependency: transitive
+    description:
+      name: barcode
+      sha256: ab180ce22c6555d77d45f0178a523669db67f95856e3378259ef2ffeb43e6003
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.8"
+  bidi:
+    dependency: transitive
+    description:
+      name: bidi
+      sha256: "9a712c7ddf708f7c41b1923aa83648a3ed44cfd75b04f72d598c45e5be287f9d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.12"
   boolean_selector:
     dependency: transitive
     description:
@@ -213,10 +229,10 @@ packages:
     dependency: transitive
     description:
       name: dcli
-      sha256: "9120d422be5fc2533c4083dc5038f267fe3085b461c5ef8be00350ea7160042b"
+      sha256: "34db376a896219c6ae8f8888d86a8c155b3d28be611337ffd810777c44e1dfc6"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "6.0.5"
   dcli_common:
     dependency: transitive
     description:
@@ -573,6 +589,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  image:
+    dependency: transitive
+    description:
+      name: image
+      sha256: f31d52537dc417fdcde36088fdf11d191026fd5e4fae742491ebd40e5a8bea7d
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.3.0"
   image_picker:
     dependency: "direct main"
     description:
@@ -717,6 +741,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
+  mailer:
+    dependency: "direct main"
+    description:
+      name: mailer
+      sha256: "21fde1497c79f402cb5fa7c50abd58927d360139e492546c941ee10767684fac"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.0"
   matcher:
     dependency: transitive
     description:
@@ -745,18 +777,18 @@ packages:
     dependency: transitive
     description:
       name: mime
-      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
+      sha256: "801fd0b26f14a4a58ccb09d5892c3fbdeff209594300a542492cf13fba9d247a"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "1.0.6"
   native_synchronization_temp:
     dependency: transitive
     description:
       name: native_synchronization_temp
-      sha256: f9ad36a5054c606db10e3dc0c9c352e6d0d56d08621af5c470abf9fa41da40fa
+      sha256: "5f5f15add4eeb6c7dcf9172314232657c6b1d002a45cca0ba46d955497645d5a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.1"
+    version: "0.6.0"
   nested:
     dependency: transitive
     description:
@@ -789,6 +821,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
+  path_parsing:
+    dependency: transitive
+    description:
+      name: path_parsing
+      sha256: "883402936929eac138ee0a45da5b0f2c80f89913e6dc3bf77eb65b84b409c6ca"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   path_provider:
     dependency: "direct main"
     description:
@@ -837,6 +877,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pdf:
+    dependency: "direct main"
+    description:
+      name: pdf
+      sha256: "05df53f8791587402493ac97b9869d3824eccbc77d97855f4545cf72df3cae07"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.11.1"
   petitparser:
     dependency: transitive
     description:
@@ -901,6 +949,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  qr:
+    dependency: transitive
+    description:
+      name: qr
+      sha256: "5a1d2586170e172b8a8c8470bbbffd5eb0cd38a66c0d77155ea138d3af3a4445"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.2"
   rxdart:
     dependency: transitive
     description:
@@ -933,6 +989,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.2.0"
+  share:
+    dependency: "direct main"
+    description:
+      name: share
+      sha256: "97e6403f564ed1051a01534c2fc919cb6e40ea55e60a18ec23cee6e0ce19f4be"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.4"
   sizer:
     dependency: "direct main"
     description:
@@ -1126,10 +1190,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: f652077d0bdf60abe4c1f6377448e8655008eef28f128bc023f7b5e8dfeb48fc
+      sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
       url: "https://pub.dev"
     source: hosted
-    version: "14.2.4"
+    version: "14.2.5"
   web:
     dependency: transitive
     description:

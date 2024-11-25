@@ -103,7 +103,7 @@ class _FailCMPAState extends State<FailCMPA> {
                           items: provider.compactadorList.map((planta) {
                             return DropdownMenuItem<String>(
                               value: planta.id,
-                              child: Text(planta.fecha.toString()),
+                              child: Text(planta.fecha.toString() + ' - ' + planta.codificacion.toString()),
                             );
                           }).toList(),
                           onChanged: (newValue) {
