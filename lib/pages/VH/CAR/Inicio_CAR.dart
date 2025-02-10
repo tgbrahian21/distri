@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
-import 'package:vista_practica/pages/PE/Estados_PE.dart';
+
+import 'Datos_CAR.dart';
 
 import 'Estado_One.dart';
 import 'Estado_Two.dart';
@@ -117,7 +118,7 @@ class _PaginaCARState extends State<PaginaCAR> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const EstadosONECAR(),
+                              builder: (context) => const DatosCAR(),
                             ));
                         // Handle Datos generales tap
                       },
