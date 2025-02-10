@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vista_practica/provider/compactador_provider.dart';
+import 'package:vista_practica/provider/camioneta_provider.dart';
 
 class FailVH extends StatefulWidget {
   const FailVH({super.key});
@@ -10,13 +10,13 @@ class FailVH extends StatefulWidget {
 }
 
 class _FailVHState extends State<FailVH> {
-  String? _selectedCompactadorId;
+  String? _selectedCamionetaId;
 
   @override
   void initState() {
     super.initState();
-    final compactadorProvider = Provider.of<CompactadorProvider>(context, listen: false);
-    compactadorProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+    final camionetaProvider = Provider.of<CamionetaProvider>(context, listen: false);
+    camionetaProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
   }
   bool _showDetails = false; // Controla si se deben mostrar los detalles
   String? _almacenadoPorOperador; // Usamos String? para permitir null
@@ -28,31 +28,31 @@ class _FailVHState extends State<FailVH> {
   void _saveData() {
     // Aquí puedes agregar la lógica para guardar los datos
   if (!_showDetails) {
-    final data = Compactador(
+    final data = Camioneta(
     almacenadoporoperador: "No aplica",
     remitidoamantenimiento: "No aplica",
     fallas: "No aplica",
 
   );    
 
-    Provider.of<CompactadorProvider>(context, listen: false)
+    Provider.of<CamionetaProvider>(context, listen: false)
         .handleFirestoreOperation(
-            action: "update", data: data, id: _selectedCompactadorId);
+            action: "update", data: data, id: _selectedCamionetaId);
    ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Datos enviados correctamente')),
     );         
 
   } else {
-    final data = Compactador(
+    final data = Camioneta(
     almacenadoporoperador: _almacenadoPorOperador ?? '',
     remitidoamantenimiento: _remitidoAMantenimiento ?? '',
     fallas: _fallasController.text,
 
   );    
 
-    Provider.of<CompactadorProvider>(context, listen: false)
+    Provider.of<CamionetaProvider>(context, listen: false)
         .handleFirestoreOperation(
-            action: "update", data: data, id: _selectedCompactadorId);
+            action: "update", data: data, id: _selectedCamionetaId);
 
             
 
@@ -93,14 +93,14 @@ class _FailVHState extends State<FailVH> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Dropdown para seleccionar la planta eléctrica
-                  Consumer<CompactadorProvider>(
+                    // Dropdown para seleccionar la fecha
+                  Consumer<CamionetaProvider>(
                     builder: (context, provider, child) {
                       return Center(
                         child: DropdownButton<String>(
-                          value: _selectedCompactadorId,
+                          value: _selectedCamionetaId,
                           hint: Text('Selecciona una fecha'),
-                          items: provider.compactadorList.map((planta) {
+                          items: provider.camionetaList.map((planta) {
                             return DropdownMenuItem<String>(
                               value: planta.id,
                               child: Text(planta.fecha.toString()),
@@ -108,7 +108,7 @@ class _FailVHState extends State<FailVH> {
                           }).toList(),
                           onChanged: (newValue) {
                             setState(() {
-                              _selectedCompactadorId = newValue;
+                              _selectedCamionetaId = newValue;
                             });
                           },
                         ),

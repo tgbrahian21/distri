@@ -6,91 +6,89 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share/share.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
-class Compresor {
+class Plancha {
   String id;
   final String fecha;
   final String codificacion;
   final String localizacion;
-  final String interpresioncmpe;
-  final String manometrocmpe;
-  final String horometrocmpe;
-  final String valvulacmpe;
-  final String soportescmpe;
-  final String combustible;
-  final String aceite;
+  final String clavija;
+  final String cableconexion;
+  final String mangosuje;
+  final String termometro;
+  final String sockets;
   final String almacenadoporoperador;
   final String remitidoamantenimiento;
   final String fallas;
+  
 
-  Compresor({
+  Plancha({
     this.id = '',
     this.fecha = '',
     this.codificacion = '',
     this.localizacion = '',
-    this.interpresioncmpe = '',
-    this.manometrocmpe = '',
-    this.horometrocmpe = '',
-    this.valvulacmpe = '',
-    this.soportescmpe = '',
-    this.combustible = '',
-    this.aceite = '',
+    this.clavija = '',
+    this.cableconexion = '',
+    this.mangosuje = '',
+    this.termometro = '',
+    this.sockets = '',
     this.almacenadoporoperador = '',
     this.remitidoamantenimiento = '',
     this.fallas = '',
+
+    
   });
 
   Map<String, dynamic> toMap() => {
         'fecha': fecha,
         'codificacion': codificacion,
         'localizacion': localizacion,
-        'interpresioncmpe': interpresioncmpe,
-        'manometrocmpe': manometrocmpe,
-        'horometrocmpe': horometrocmpe,
-        'valvulacmpe': valvulacmpe,
-        'soportescmpe': soportescmpe,
-        'combustible': combustible,
-        'aceite': aceite,
+        'clavija': clavija,
+        'cableconexion': cableconexion,
+        'mangosuje': mangosuje,
+        'termometro': termometro,
+        'sockets': sockets,
         'almacenadoporoperador': almacenadoporoperador,
         'remitidoamantenimiento': remitidoamantenimiento,
         'fallas': fallas,
       }..removeWhere((_, value) => value == '');
 
-  factory Compresor.fromMap(Map<String, dynamic> data, String documentId) =>
-      Compresor(
+  factory Plancha.fromMap(Map<String, dynamic> data, String documentId) =>
+      Plancha(
         id: documentId,
         fecha: data['fecha'] ?? '',
         codificacion: data['codificacion'] ?? '',
         localizacion: data['localizacion'] ?? '',
-        interpresioncmpe: data['interpresioncmpe'] ?? '',
-        manometrocmpe: data['manometrocmpe'] ?? '',
-        horometrocmpe: data['horometrocmpe'] ?? '',
-        valvulacmpe: data['valvulacmpe'] ?? '',
-        soportescmpe: data['soportescmpe'] ?? '',
-        combustible: data['combustible'] ?? '',
-        aceite: data['aceite'] ?? '',
+        clavija: data['clavija'] ?? '',
+        cableconexion: data['cableconexion'] ?? '',
+        mangosuje: data['mangosuje'] ?? '',
+        termometro: data['termometro'] ?? '',
+        sockets: data['sockets'] ?? '',
         almacenadoporoperador: data['almacenadoporoperador'] ?? '',
         remitidoamantenimiento: data['remitidoamantenimiento'] ?? '',
         fallas: data['fallas'] ?? '',
+
+        
       );
 }
 
-class CompresorProvider extends ChangeNotifier {
+class PlanchaProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Compresor> _compresorList = [];
-  final Box _hiveBox = Hive.box('compresor');
+  List<Plancha> _planchaList = [];
+  final Box _hiveBox = Hive.box('plancha');
 
-  List<Compresor> get compresorList => _compresorList;
+  List<Plancha> get planchaList => _planchaList;
 
   Future<void> handleFirestoreOperation({
     required String action,
-    Compresor? data,
+    Plancha? data,
     String? id,
   }) async {
     try {
-      final collection = _firestore.collection('Compresor');
+      final collection = _firestore.collection('Plancha');
       if (action == 'add' && data != null) {
         await _addOffline(data, collection);
       } else if (action == 'update' && data != null && id != null) {
@@ -104,7 +102,7 @@ class CompresorProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _addOffline(Compresor data, CollectionReference collection) async {
+  Future<void> _addOffline(Plancha data, CollectionReference collection) async {
     try {
       final docRef = await collection.add(data.toMap());
       data.id = docRef.id;
@@ -117,7 +115,7 @@ class CompresorProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _updateOffline(Compresor data, String id, CollectionReference collection) async {
+  Future<void> _updateOffline(Plancha data, String id, CollectionReference collection) async {
     try {
       await collection.doc(id).update(data.toMap());
       await _hiveBox.put(id, data.toMap());
@@ -130,8 +128,8 @@ class CompresorProvider extends ChangeNotifier {
   Future<void> _fetchOffline(CollectionReference collection) async {
     try {
       final snapshot = await collection.orderBy('fecha', descending: true).limit(4).get();
-      _compresorList = snapshot.docs
-          .map((doc) => Compresor.fromMap(Map<String, dynamic>.from(doc.data() as Map), doc.id))
+      _planchaList = snapshot.docs
+          .map((doc) => Plancha.fromMap(Map<String, dynamic>.from(doc.data() as Map), doc.id))
           .toList();
 
       // Actualizar Hive con los datos obtenidos
@@ -140,14 +138,14 @@ class CompresorProvider extends ChangeNotifier {
       }
     } catch (e) {
       // Si no hay conexión, leer los datos desde Hive
-      _compresorList = _hiveBox.values
-          .map((data) => Compresor.fromMap(Map<String, dynamic>.from(data), data['id']))
+      _planchaList = _hiveBox.values
+          .map((data) => Plancha.fromMap(Map<String, dynamic>.from(data), data['id']))
           .toList();
     }
   }
 
   Future<void> syncOfflineData() async {
-    final collection = _firestore.collection('Compresor');
+    final collection = _firestore.collection('Plancha');
 
     for (var key in _hiveBox.keys) {
       final data = _hiveBox.get(key) as Map<String, dynamic>;
@@ -167,14 +165,14 @@ class CompresorProvider extends ChangeNotifier {
     if (kDebugMode) print('Error en $context: $error');
   }
 
-  // Método para generar y compartir un reporte del compresor
-  Future<void> generateAndShareReport(String compresorId) async {
+  // Método para generar y compartir un reporte del compactador
+  Future<void> generateAndShareReport(String planchaId) async {
     try {
       final DocumentSnapshot snapshot =
-          await _firestore.collection('Compresor').doc(compresorId).get();
+          await _firestore.collection('Plancha').doc(planchaId).get();
 
       if (!snapshot.exists) {
-        throw Exception("Datos del compresor no encontrados");
+        throw Exception("Datos de la plancha no encontrados");
       }
 
       final data = snapshot.data() as Map<String, dynamic>;
@@ -186,21 +184,21 @@ class CompresorProvider extends ChangeNotifier {
           build: (pw.Context context) => pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('Reporte del Compresor', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.Text('Reporte del Placha de termofusion', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 16),
               pw.Text('Fecha: ${data['fecha']}'),
               pw.Text('Codificación: ${data['codificacion']}'),
               pw.Text('Localización: ${data['localizacion']}'),
-              pw.Text('Interpresión: ${data['interpresioncmpe']}'),
-              pw.Text('Manómetro: ${data['manometrocmpe']}'),
-              pw.Text('Horómetro: ${data['horometrocmpe']}'),
-              pw.Text('Válvula: ${data['valvulacmpe']}'),
-              pw.Text('Soportes: ${data['soportescmpe']}'),
-              pw.Text('Combustible: ${data['combustible']}'),
-              pw.Text('Aceite: ${data['aceite']}'),
-              pw.Text('Almacenado por Operador: ${data['almacenadoporoperador']}'),
-              pw.Text('Remitido a Mantenimiento: ${data['remitidoamantenimiento']}'),
+              pw.Text('Clavija: ${data['clavija']}'),
+              pw.Text('Cable de conexión: ${data['cableconexion']}'),
+              pw.Text('Mango sujeto: ${data['mangosuje']}'),
+              pw.Text('Termómetro: ${data['termometro']}'),
+              pw.Text('Sockets: ${data['sockets']}'),
+              pw.Text('Almacenado por operador: ${data['almacenadoporoperador']}'),
+              pw.Text('Remitido a mantenimiento: ${data['remitidoamantenimiento']}'),
               pw.Text('Fallas: ${data['fallas']}'),
+
+              
             ],
           ),
         ),
@@ -208,11 +206,11 @@ class CompresorProvider extends ChangeNotifier {
 
       // Guardar el PDF en el dispositivo
       final output = await getTemporaryDirectory();
-      final file = File("${output.path}/reporte_compresor.pdf");
+      final file = File("${output.path}/reporte_plancha_termofusion.pdf");
       await file.writeAsBytes(await pdf.save());
 
       // Compartir el PDF
-      await Share.shareFiles([file.path], text: 'Reporte del Compresor');
+      await Share.shareFiles([file.path], text: 'Reporte de la Placha de termofusion');
 
       // Enviar el PDF a los administradores
       await sendReportToAdmins(file);
@@ -238,8 +236,8 @@ class CompresorProvider extends ChangeNotifier {
         final message = Message()
           ..from = const Address('brahianservidor4@gmail.com', 'distriservicios')
           ..recipients.add(email)
-          ..subject = 'Reporte del Compresor'
-          ..text = 'Adjunto se encuentra el reporte del compresor.'
+          ..subject = 'Reporte del Plancha de termofusion'
+          ..text = 'Adjunto se encuentra el reporte de la plancha de termofusion.'
           ..attachments.add(FileAttachment(pdfFile));
 
         await send(message, smtpServer);

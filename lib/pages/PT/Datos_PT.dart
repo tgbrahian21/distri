@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:vista_practica/provider/compactador_provider.dart';
+import 'package:vista_practica/provider/plancha_provider.dart';
 
 class DatosPT extends StatefulWidget {
   const DatosPT({super.key});
 
   @override
-  State<DatosPT> createState() => _DatosCompactadorState();
+  State<DatosPT> createState() => _DatosPlanchaState();
 }
 
-class _DatosCompactadorState extends State<DatosPT> {
+class _DatosPlanchaState extends State<DatosPT> {
 
   final _formKey = GlobalKey<FormState>();
   final _fechaController = TextEditingController();
@@ -20,13 +20,13 @@ class _DatosCompactadorState extends State<DatosPT> {
   void _saveData() {
     // Aquí va la lógica para guardar los datos
     // Por ejemplo, puedes utilizar una base de datos o una API para guardar los datos
-    final data = Compactador(
+    final data = Plancha(
       fecha: _fechaController.text,
       codificacion: _codificacionController.text,
       localizacion: _localizacionController.text,
     );
 
-      Provider.of<CompactadorProvider>(context, listen: false).handleFirestoreOperation(action: "add",data: data);
+      Provider.of<PlanchaProvider>(context, listen: false).handleFirestoreOperation(action: "add",data: data);
   }
 
   @override

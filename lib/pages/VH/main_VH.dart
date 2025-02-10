@@ -76,7 +76,7 @@ class _PagemainVHState extends State<PagemainVH> {
                     child: SizedBox(
                       height: 40,
                       child: Text(
-                        'Vehuiculos',
+                        'Vehiculos',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 30,

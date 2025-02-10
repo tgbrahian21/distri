@@ -10,9 +10,11 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:vista_practica/firebase_options.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/provider/auth_provider.dart';
+import 'package:vista_practica/provider/camioneta_provider.dart';
 import 'package:vista_practica/provider/compactador_provider.dart';
 import 'package:vista_practica/provider/compresor_provider.dart';
 import 'package:vista_practica/provider/login_provider.dart';
+import 'package:vista_practica/provider/plancha_provider.dart';
 import 'package:vista_practica/provider/plantaelec_provider.dart';
 import 'package:vista_practica/provider/pulidora_provider.dart';
 import 'package:vista_practica/provider/register_provider.dart';
@@ -31,6 +33,8 @@ void main() async {
   await Hive.openBox('compresor'); // Abre una caja llamada 'compresor'
   await Hive.openBox('pulidora'); // Abre una caja llamada 'pulidora'
   await Hive.openBox('taladro'); // Abre una caja llamada 'taladro'
+  await Hive.openBox('plancha'); // Abre una caja llamada 'plancha'
+  await Hive.openBox('camioneta'); // Abre una caja llamada 'userData'
   await PushNotificationService.initializeApp();
   await LocalStorage().init();
   final isLogged = LocalStorage().getIsLoggedIn();
@@ -58,6 +62,8 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(lazy: false, create: (_) => TaladroProvider()),
             ChangeNotifierProvider(lazy: false, create: (_) => CompresorProvider()),
             ChangeNotifierProvider(lazy: false, create: (_) => CompactadorProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => PlanchaProvider()),
+            ChangeNotifierProvider(lazy: false, create: (_) => CamionetaProvider()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [

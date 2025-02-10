@@ -1,6 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
 import 'package:vista_practica/pages/PE/Estados_PE.dart';
+import 'package:vista_practica/provider/camioneta_provider.dart';
+import 'package:vista_practica/services/camioneta_service.dart';
 
 import 'Estado_One.dart';
 import 'Estado_Two.dart';
@@ -24,6 +30,37 @@ class PaginaCAR extends StatefulWidget {
 }
 
 class _PaginaCARState extends State<PaginaCAR> {
+
+String? _selectedCamionetaId;
+  String? userRole; // Para almacenar el rol del usuario
+
+  @override
+  void initState() {
+    super.initState();
+    final camionetaProvider = Provider.of<CamionetaProvider>(context, listen: false);
+    camionetaProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+    _getUserRole(); // Obtener el rol del usuario
+  }
+
+  // Método para obtener el rol del usuario actual
+  Future<void> _getUserRole() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          setState(() {
+            userRole = userDoc['role'];
+          });
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error al obtener el rol del usuario: $e");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -338,6 +375,71 @@ class _PaginaCARState extends State<PaginaCAR> {
                 ),
               ),
             ),
+            if (userRole == 'admin' || userRole == 'superAdmin') ...[
+              // Mostrar solo si el usuario tiene el rol adecuado
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 10),
+                child: const Text('Generar Reporte de la Pulidora'),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Card(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  child: Column(
+                    children: [
+                      Consumer<CamionetaProvider>(
+                        builder: (context, provider, child) {
+                          return DropdownButtonFormField<String>(
+                            value: _selectedCamionetaId,
+                            hint: const Text('Selecciona un registro para el reporte'),
+                            items: provider.camionetaList.map((camioneta) {
+                              return DropdownMenuItem<String>(
+                                value: camioneta.id,
+                                child: Text('${camioneta.fecha} '),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedCamionetaId = newValue;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Registro de Pulidora',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor, seleccione un registro';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _selectedCamionetaId == null
+                            ? null
+                            : () async {
+                                final reportService = CamionetaReportService();
+                                await reportService.generateAndShareCamionetaReport(_selectedCamionetaId!, 'brahianservidor4@gmail.com');
+                              },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15.0, horizontal: 80.0),
+                          textStyle: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Text('Generar Reporte PDF'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
