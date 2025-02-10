@@ -260,7 +260,7 @@ class PulidoraProvider extends ChangeNotifier {
           .where('role', whereIn: ['admin', 'superAdmin'])
           .get();
 
-      final smtpServer = gmail('brahianservidor4@gmail.com', 'nerr jlhn apbh pyxs');
+      final smtpServer = gmail('brahianservidor4@gmail.com', 'ksmj pzeq kige mcbx');
 
       for (var doc in adminsQuerySnapshot.docs) {
         final email = doc['email'];

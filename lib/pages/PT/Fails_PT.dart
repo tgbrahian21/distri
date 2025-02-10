@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vista_practica/provider/compactador_provider.dart';
+import 'package:vista_practica/provider/plancha_provider.dart';
 
 class FailPT extends StatefulWidget {
   const FailPT({super.key});
@@ -10,13 +10,13 @@ class FailPT extends StatefulWidget {
 }
 
 class _FailPTState extends State<FailPT> {
-  String? _selectedCompactadorId;
+  String? _selectedPlanchaId;
 
   @override
   void initState() {
     super.initState();
-    final compactadorProvider = Provider.of<CompactadorProvider>(context, listen: false);
-    compactadorProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+    final planchaProvider = Provider.of<PlanchaProvider>(context, listen: false);
+    planchaProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
   }
   bool _showDetails = false; // Controla si se deben mostrar los detalles
   String? _almacenadoPorOperador; // Usamos String? para permitir null
@@ -28,31 +28,31 @@ class _FailPTState extends State<FailPT> {
   void _saveData() {
     // Aquí puedes agregar la lógica para guardar los datos
   if (!_showDetails) {
-    final data = Compactador(
+    final data = Plancha(
     almacenadoporoperador: "No aplica",
     remitidoamantenimiento: "No aplica",
     fallas: "No aplica",
 
   );    
 
-    Provider.of<CompactadorProvider>(context, listen: false)
+    Provider.of<PlanchaProvider>(context, listen: false)
         .handleFirestoreOperation(
-            action: "update", data: data, id: _selectedCompactadorId);
+            action: "update", data: data, id: _selectedPlanchaId);
    ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Datos enviados correctamente')),
     );         
 
   } else {
-    final data = Compactador(
+    final data = Plancha(
     almacenadoporoperador: _almacenadoPorOperador ?? '',
     remitidoamantenimiento: _remitidoAMantenimiento ?? '',
     fallas: _fallasController.text,
 
   );    
 
-    Provider.of<CompactadorProvider>(context, listen: false)
+    Provider.of<PlanchaProvider>(context, listen: false)
         .handleFirestoreOperation(
-            action: "update", data: data, id: _selectedCompactadorId);
+            action: "update", data: data, id: _selectedPlanchaId);
 
             
 
@@ -94,13 +94,13 @@ class _FailPTState extends State<FailPT> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Dropdown para seleccionar la planta eléctrica
-                  Consumer<CompactadorProvider>(
+                  Consumer<PlanchaProvider>(
                     builder: (context, provider, child) {
                       return Center(
                         child: DropdownButton<String>(
-                          value: _selectedCompactadorId,
+                          value: _selectedPlanchaId,
                           hint: Text('Selecciona una fecha'),
-                          items: provider.compactadorList.map((planta) {
+                          items: provider.planchaList.map((planta) {
                             return DropdownMenuItem<String>(
                               value: planta.id,
                               child: Text(planta.fecha.toString()),
@@ -108,7 +108,7 @@ class _FailPTState extends State<FailPT> {
                           }).toList(),
                           onChanged: (newValue) {
                             setState(() {
-                              _selectedCompactadorId = newValue;
+                              _selectedPlanchaId = newValue;
                             });
                           },
                         ),

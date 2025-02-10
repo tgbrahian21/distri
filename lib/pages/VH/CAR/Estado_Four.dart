@@ -26,21 +26,7 @@ class _EstadosFOURCARState extends State<EstadosFOURCAR> {
   // Nueva función para enviar los datos seleccionados
   void _saveData() {
     // Recolectar los valores seleccionados
-    String message = '''
-      Cinturones de Seguridad: $_selectedCinturones
-      Airbags: $_selectedAirbags
-      Chasis y carrocería: $_selectedChasis
-      Cristales (Vidrios): $_selectedCristales
-      Estado Espejos: $_selectedEspejos
-
-      Velocímetro: $_selectedVelocimetro
-      Espejo Lateral Derecho: $_selectedEspejoLatDere
-      Espejo Lateral Izquierdo: $_selectedEspejoLatizq
-      Espejo Retrovisor : $_selectedRetrosivor
-    ''';
-
-    // Aquí puedes procesar el mensaje o enviarlo a algún servicio o base de datos
-    print(message);
+    
 
     // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vista_practica/provider/plancha_provider.dart';
 
 class EstadosPT extends StatefulWidget {
   const EstadosPT({super.key});
@@ -8,30 +10,40 @@ class EstadosPT extends StatefulWidget {
 }
 
 class _EstadosPTState extends State<EstadosPT> {
-  final _formKey = GlobalKey<FormState>();
+  String? _selectedPlanchaId;
 
+  @override
+  void initState() {
+    super.initState();
+    final planchaProvider =
+        Provider.of<PlanchaProvider>(context, listen: false);
+    planchaProvider.handleFirestoreOperation(action: "fetch"); // Carga los datos al iniciar el widget
+  }
+
+  final _formKey = GlobalKey<FormState>();
 
   String? _selectedClavija;
   String? _selectedCableconexion;
-
   String? _selectedMangoSuje;
   String? _selectedTermometro;
   String? _selectedSockets;
 
-
   // Nueva función para enviar los datos seleccionados
   void _saveData() {
     // Recolectar los valores seleccionados
-    String message = '''
-      Estado de Clavija: $_selectedClavija
-      Estado de cable de conexión: $_selectedCableconexion
-      Estado de mango de sujeción: $_selectedMangoSuje
-      Estado de termometro: $_selectedTermometro
-      Estado de Sockets: $_selectedSockets
-    ''';
+    final data = Plancha(
+      clavija: _selectedClavija ?? '',
+      cableconexion: _selectedCableconexion ?? '',
+      mangosuje: _selectedMangoSuje ?? '',
+      termometro: _selectedTermometro ?? '',
+      sockets: _selectedSockets ?? '',
+    );
 
-    // Aquí puedes procesar el mensaje o enviarlo a algún servicio o base de datos
-    print(message);
+    Provider.of<PlanchaProvider>(context, listen: false).handleFirestoreOperation(
+      action: "update",
+      data: data,
+      id: _selectedPlanchaId,
+    );
 
     // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,144 +77,160 @@ class _EstadosPTState extends State<EstadosPT> {
             ),
           ),
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment
-                    .spaceBetween, // Alinea los elementos a los extremos
-                children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .start, // Alinea el texto a la izquierda
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 60.0,
-                            bottom:
-                                10.0), // Ajusta el valor de padding según sea necesario
-                        child: Text(
-                          'Estado',
-                          style: TextStyle(
+          child: Form(
+            key: _formKey, // Aquí usamos el _formKey para la validación
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Consumer<PlanchaProvider>(
+                  builder: (context, provider, child) {
+                    return Center(
+                      child: DropdownButton<String>(
+                        value: _selectedPlanchaId,
+                        hint: Text('Selecciona una fecha'),
+                        items: provider.planchaList.map((planta) {
+                          return DropdownMenuItem<String>(
+                            value: planta.id,
+                            child: Text(
+                                '${planta.fecha.toString()} - ${planta.codificacion.toString()}'),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _selectedPlanchaId = newValue;
+                          });
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween, // Alinea los elementos a los extremos
+                  children: [
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment
+                          .start, // Alinea el texto a la izquierda
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 60.0, bottom: 10.0),
+                          child: Text(
+                            'Estado',
+                            style: TextStyle(
                               fontSize: 30.0,
                               fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 75, 75, 75)),
+                              color: Color.fromARGB(255, 75, 75, 75),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16.0),
+                    Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(80),
+                        border: Border.all(
+                          color: const Color.fromARGB(212, 75, 75, 75),
+                          width: 4,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(width: 16.0),
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(80),
-                      border: Border.all(
-                          color: const Color.fromARGB(212, 75, 75, 75),
-                          width: 4),
-                    ),
-                    child: Opacity(
-                      opacity: 0.6,
-                      child: Image.asset(
-                        'assets/icons/PlanchaTermo.png',
-                        height: 70.0,
-                        width: 70.0,
+                      child: Opacity(
+                        opacity: 0.6,
+                        child: Image.asset(
+                          'assets/icons/PlanchaTermo.png',
+                          height: 70.0,
+                          width: 70.0,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16.0), // Espacio derecho
-                ],
-              ),
-              const Text(
-                "Inserte datos",
-                style: TextStyle(
-                  fontSize: 22.0,
-                  fontWeight: FontWeight.bold,
+                    const SizedBox(width: 16.0), // Espacio derecho
+                  ],
                 ),
-              ),
-
-              const SizedBox(height: 20.0),
-              Container(
-                padding: const EdgeInsets.only(bottom: 0.1),
-                alignment: Alignment.bottomCenter,
-                child: const Text(
-                  "Estados",
+                const Text(
+                  "Inserte datos",
                   style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 75, 75, 75),
-                  ),
-                ),
-              ),
-              _buildDropdown("Estado de Clavija", _selectedClavija, estadoOptions),
-              _buildDropdown(
-                  "Estado de cable de conexión", _selectedCableconexion, estadoOptions),
-              _buildDropdown("Estado de mango de sujeción", _selectedMangoSuje,
-                  estadoOptions),
-              _buildDropdown(
-                  "Estado de termometro", _selectedTermometro, estadoOptions),
-              _buildDropdown(
-                  "Estado de Sockets", _selectedSockets, estadoOptions),
-
-
-              const SizedBox(height: 58.0),
-
-              // Botón de envío
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-
-                    _saveData();
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Éxito'),
-                          content: const Text('Datos guardados con éxito'),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(
-                                    context); // cerrar ventana emergente
-                                Navigator.pop(context); // regresar al inicio
-                              },
-                              child: const Text('Aceptar'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Falta información'),
-                          content:
-                              const Text('Por favor, llene todos los campos'),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(
-                                    context); // cerrar ventana emergente
-                              },
-                              child: const Text('Aceptar'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15.0),
-                  textStyle: const TextStyle(
-                    fontSize: 18.0,
+                    fontSize: 22.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                child: const Text('Enviar datos'),
-              ),
-            ],
+                const SizedBox(height: 20.0),
+                Container(
+                  padding: const EdgeInsets.only(bottom: 0.1),
+                  alignment: Alignment.bottomCenter,
+                  child: const Text(
+                    "Estados",
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 75, 75, 75),
+                    ),
+                  ),
+                ),
+                _buildDropdown("Estado de Clavija", _selectedClavija, estadoOptions),
+                _buildDropdown(
+                    "Estado de cable de conexión", _selectedCableconexion, estadoOptions),
+                _buildDropdown(
+                    "Estado de mango de sujeción", _selectedMangoSuje, estadoOptions),
+                _buildDropdown(
+                    "Estado de termometro", _selectedTermometro, estadoOptions),
+                _buildDropdown("Estado de Sockets", _selectedSockets, estadoOptions),
+                const SizedBox(height: 58.0),
+                // Botón de envío
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _saveData();
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Éxito'),
+                            content: const Text('Datos guardados con éxito'),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context); // cerrar ventana emergente
+                                  Navigator.pop(context); // regresar al inicio
+                                },
+                                child: const Text('Aceptar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Falta información'),
+                            content: const Text('Por favor, llene todos los campos'),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context); // cerrar ventana emergente
+                                },
+                                child: const Text('Aceptar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15.0),
+                    textStyle: const TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  child: const Text('Enviar datos'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -238,7 +266,7 @@ class _EstadosPTState extends State<EstadosPT> {
                 case "Estado de cable de conexión":
                   _selectedCableconexion = value;
                   break;
-                case "Sistema electrico":
+                case "Estado de mango de sujeción":
                   _selectedMangoSuje = value;
                   break;
                 case "Estado de termometro":
@@ -267,3 +295,4 @@ class _EstadosPTState extends State<EstadosPT> {
     );
   }
 }
+

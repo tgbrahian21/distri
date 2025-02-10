@@ -83,7 +83,7 @@ class CompactadorReportService {
           .get();
 
       // Configurar el servidor SMTP
-      final smtpServer = gmail('brahianservidor4@gmail.com', 'nerr jlhn apbh pyxs');
+      final smtpServer = gmail('brahianservidor4@gmail.com', 'ksmj pzeq kige mcbx');
 
       for (var doc in adminsQuerySnapshot.docs) {
         final email = doc['email'];
