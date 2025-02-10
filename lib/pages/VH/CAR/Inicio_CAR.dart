@@ -4,9 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vista_practica/pages/pagina_main.dart';
+
 import 'package:vista_practica/pages/PE/Estados_PE.dart';
 import 'package:vista_practica/provider/camioneta_provider.dart';
 import 'package:vista_practica/services/camioneta_service.dart';
+
+import 'Datos_CAR.dart';
+
 
 import 'Estado_One.dart';
 import 'Estado_Two.dart';
@@ -154,7 +158,7 @@ String? _selectedCamionetaId;
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const EstadosONECAR(),
+                              builder: (context) => const DatosCAR(),
                             ));
                         // Handle Datos generales tap
                       },

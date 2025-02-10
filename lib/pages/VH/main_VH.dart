@@ -8,6 +8,8 @@ import 'package:vista_practica/routes/routes.dart';
 //import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'CAR/Inicio_CAR.dart';
+import 'TR/Inicio_TR.dart';
+import 'ZJ/Inicio_ZJ.dart';
 
 import 'package:vista_practica/widgets/button_custom.dart';
 
@@ -108,7 +110,7 @@ class _PagemainVHState extends State<PagemainVH> {
                             child: ButtonCustom(
                               icon: 'assets/icons/Tractor.png',
                               text: 'Tractor',
-                              route: PaginaCAR(),
+                              route: PaginaTR(),
                             ),
                           ),
                           SizedBox(
@@ -116,7 +118,7 @@ class _PagemainVHState extends State<PagemainVH> {
                             child: ButtonCustom(
                               icon: 'assets/icons/Zj.png',
                               text: 'Zanjadora',
-                              route: PaginaCAR(),
+                              route: PaginaZJ(),
                             ),
                           ),
                         ],
